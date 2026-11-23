@@ -4,7 +4,7 @@ import {readFile} from "node:fs/promises";
 import {createSeoPages} from "../src/seo-pages.mjs";
 
 const catalog=JSON.parse(await readFile(new URL("../data/catalog.json",import.meta.url),"utf8"));
-const site="https://sautilink-stickers.dr-charles-services.workers.dev";
+const site="https://stickers.sautilink.com";
 const renderer=createSeoPages(catalog,{publicSiteUrl:site});
 const fetchPath=(path,method="GET")=>renderer.fetch(new Request(site+path,{method}));
 const locs=xml=>[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
@@ -34,7 +34,7 @@ test("pack pages render accessible server-side links, meta and structured data",
  const html=await res.text();
  assert.match(html,/<h1>SautiLink Originals<\/h1>/);
  assert.match(html,/<a class="sticker-card" href="\/stickers\/sl-happy"/);
- assert.match(html,/<link rel="canonical" href="https:\/\/sautilink-stickers/);
+ assert.ok(html.includes('<link rel="canonical" href="'+site+'/packs/sautilink-originals"'));
  assert.match(html,/<meta name="description"/);
  assert.match(html,/<script type="application\/ld\+json">/);
  assert.match(html,/font.*Inter/);

@@ -17,7 +17,7 @@
     ]
   },
   "vars": {
-    "ALLOWED_ORIGINS": "https://sautilink.com,https://www.sautilink.com",
-    "PUBLIC_SITE_URL": "https://sautilink-stickers.dr-charles-services.workers.dev"
+    "ALLOWED_ORIGINS": "https://sautilink.com,https://www.sautilink.com,https://stickers.sautilink.com,https://www.stickers.sautilink.com",
+    "PUBLIC_SITE_URL": "https://stickers.sautilink.com"
   }
 }
