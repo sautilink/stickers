@@ -26,7 +26,7 @@ test("robots supports indexing public pages and points to correct sitemap",async
  assert.equal(response.status,200);
  assert.match(txt,/User-agent: \*/);
  assert.match(txt,/Disallow: \/api\//);
- assert.match(txt,new RegExp(site.replaceAll(".","\\\\.")+"/sitemap.xml"));
+ assert.ok(txt.includes(site+"/sitemap.xml"));
 });
 test("pack pages render accessible server-side links, meta and structured data",async()=>{
  const res=await fetchPath("/packs/sautilink-originals");

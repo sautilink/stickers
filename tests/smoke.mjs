@@ -16,8 +16,8 @@ async function check(){
  }
  assert.ok(ready,"Local server did not start");
  const catalog=JSON.parse(await readFile(new URL("../data/catalog.json",import.meta.url),"utf8"));
- const index=await fetch(base+"/");assert.equal(index.status,200);assert.match(await index.text(),/Every feeling/);
- const homeHtml=await index.clone().text();
+ const index=await fetch(base+"/");assert.equal(index.status,200);
+ const homeHtml=await index.text();assert.match(homeHtml,/Express yourself/);
  assert.match(homeHtml, /rel="canonical"/);
  assert.match(homeHtml, /application\/ld\+json/);
  assert.match(homeHtml, /\/packs\/sautilink-originals/);
