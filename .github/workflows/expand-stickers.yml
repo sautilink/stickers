@@ -5,6 +5,7 @@ on:
     branches: [feat/sticker-studio-v2]
     paths:
       - .github/workflows/expand-stickers.yml
+      - scripts/import-noto-gallery.mjs
 permissions:
   contents: write
 jobs:
