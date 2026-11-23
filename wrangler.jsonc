@@ -6,9 +6,18 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/health", "/assets/original/*"]
+    "run_worker_first": [
+      "/api/*",
+      "/health",
+      "/assets/original/*",
+      "/sitemap.xml",
+      "/robots.txt",
+      "/packs/*",
+      "/stickers/*"
+    ]
   },
   "vars": {
-    "ALLOWED_ORIGINS": "https://sautilink.com,https://www.sautilink.com"
+    "ALLOWED_ORIGINS": "https://sautilink.com,https://www.sautilink.com",
+    "PUBLIC_SITE_URL": "https://sautilink-stickers.dr-charles-services.workers.dev"
   }
 }

@@ -17,8 +17,27 @@ async function check(){
  assert.ok(ready,"Local server did not start");
  const catalog=JSON.parse(await readFile(new URL("../data/catalog.json",import.meta.url),"utf8"));
  const index=await fetch(base+"/");assert.equal(index.status,200);assert.match(await index.text(),/Every feeling/);
+ const homeHtml=await index.clone().text();
+ assert.match(homeHtml, /rel="canonical"/);
+ assert.match(homeHtml, /application\/ld\+json/);
+ assert.match(homeHtml, /\/packs\/sautilink-originals/);
+ assert.match(homeHtml, /\/pilot-theme\.css/);
  const picker=await fetch(base+"/studio-v2.js");assert.equal(picker.status,200);assert.match(await picker.text(),/sticker-selected/);
- for(const asset of ["/studio-v2.css","/sdk.js","/embed.js","/embed-demo.html"]){const response=await fetch(base+asset);assert.equal(response.status,200,asset);}
+ for(const asset of ["/studio-v2.css","/sdk.js","/embed.js","/embed-demo.html","/pilot-theme.css","/seo-pages.css","/embed-demo.js","/site.webmanifest"]){const response=await fetch(base+asset);assert.equal(response.status,200,asset);}
+ const robots=await (await fetch(base+"/robots.txt")).text();
+ assert.match(robots, /Sitemap:/);assert.match(robots,/Disallow: \/api\//);
+ const sitemapResponse=await fetch(base+"/sitemap.xml");
+ assert.equal(sitemapResponse.status,200);
+ const sitemapText=await sitemapResponse.text();
+ assert.match(sitemapText, /<urlset/);
+ assert.equal((sitemapText.match(/<loc>/g)||[]).length,2+catalog.packs.length+catalog.stickers.length);
+ const packResponse=await fetch(base+"/packs/sautilink-originals");
+ assert.equal(packResponse.status,200);assert.match(await packResponse.text(),/sl-happy/);
+ const stickerResponse=await fetch(base+"/stickers/sl-love");
+ assert.equal(stickerResponse.status,200);assert.match(await stickerResponse.text(),/Love Animated Sticker/);
+ const notFound=await fetch(base+"/stickers/does-not-exist");
+ assert.equal(notFound.status,404);
+ assert.match(notFound.headers.get("x-robots-tag"),/noindex/);
  const legacyCats=await(await fetch(base+"/api/v1/categories")).json();assert.ok(legacyCats.data.every(v=>typeof v==="string"));
  const detailedCats=await(await fetch(base+"/api/v1/categories?with_counts=true")).json();assert.ok(detailedCats.data.every(v=>Number.isInteger(v.count)));
  const packs=await (await fetch(base+"/api/v1/packs")).json();assert.equal(packs.data.length,catalog.packs.length);

@@ -1,0 +1,22 @@
+# Security, browser compatibility and crawl directives for Worker Static Assets.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://sautilink.com data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; manifest-src 'self'; upgrade-insecure-requests
+
+/embed.js
+  Access-Control-Allow-Origin: *
+
+/sdk.js
+  Access-Control-Allow-Origin: *
+
+/embed-demo.html
+  X-Robots-Tag: noindex, nofollow
+
+/404.html
+  X-Robots-Tag: noindex, nofollow
+
+/assets/*
+  Cache-Control: public, max-age=86400
