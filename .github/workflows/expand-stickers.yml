@@ -1,0 +1,38 @@
+name: Expand licensed Noto animated sticker library
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/sticker-studio-v2]
+    paths:
+      - .github/workflows/expand-stickers.yml
+      - scripts/import-noto-gallery.mjs
+permissions:
+  contents: write
+jobs:
+  import:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Import official CC BY 4.0 animated WebP assets
+        run: npm run import:gallery
+      - name: Validate, test and smoke-check
+        run: |
+          npm run validate
+          npm test
+          npm run smoke
+      - name: Commit imported assets on development branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/catalog.json public/assets/noto
+          if git diff --cached --quiet; then
+            echo "No additional assets"
+          else
+            git commit -m "assets: expand licensed animated stickers [skip ci]"
+            git push origin HEAD:feat/sticker-studio-v2
+          fi

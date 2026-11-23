@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#f6f7fa"/><meta name="description" content="Browse and use SautiLink animated sticker packs."/>
-<title>Sticker Studio — SautiLink</title><link rel="stylesheet" href="/styles.css"/></head>
+<title>Sticker Studio — SautiLink</title><link rel="stylesheet" href="/styles.css"/><link rel="stylesheet" href="/studio-v2.css"/></head>
 <body>
 <div class="shell">
  <aside class="sidebar">
@@ -10,20 +10,22 @@
   <button class="nav active" id="allPacks" type="button"><span>◫</span> Discover <span class="nav-arrow">›</span></button>
   <button class="nav" id="favoritesTab" type="button"><span>♡</span> Favorites <span class="nav-arrow">›</span></button>
   <button class="nav" id="recentTab" type="button"><span>◷</span> Recently used <span class="nav-arrow">›</span></button>
+  <button class="nav" id="featuredTab" type="button"><span>✦</span> Featured <span class="nav-arrow">›</span></button>
   <div class="side-label top">COLLECTIONS</div><div id="packNav"></div>
   <div class="sidebar-bottom"><span class="status-dot"></span> First-party sticker engine<br/><small>Independent API · v0.1</small></div>
  </aside>
  <main class="main">
-  <header class="toolbar"><div class="mobile-brand">✳ SautiLink Stickers</div><span class="eyebrow">STICKER STUDIO</span><div class="toolbar-right"><span class="api-pill"><span class="status-dot"></span> API connected</span></div></header>
+  <header class="toolbar"><div class="mobile-brand">✳ SautiLink Stickers</div><span class="eyebrow">STICKER STUDIO</span><div class="toolbar-right"><span class="api-pill" id="apiState" aria-live="polite"><span class="status-dot"></span> Checking API…</span></div></header>
   <div class="content">
    <section class="hero"><div><span class="hero-tag">NEW • SAUTILINK ORIGINALS</span><h1>Every feeling,<br/><em>one sticker away.</em></h1><p>Express yourself with a growing collection of animated stickers. Built for SautiLink chats, comments and Rooms.</p></div><div class="hero-art" aria-hidden="true"><img src="/assets/original/sl-love.svg" alt=""/><img src="/assets/original/sl-cool.svg" alt=""/><img src="/assets/original/sl-laugh.svg" alt=""/></div></section>
+   <div class="pack-explore" id="packExplore" aria-label="Explore sticker packs"></div>
    <div class="heading-row"><div><span class="eyebrow">YOUR COLLECTION</span><h2 id="sectionTitle">Explore stickers</h2></div><div id="total" class="counter"></div></div>
-   <div class="search-row"><label class="search"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search stickers, emotions, Kiswahili…" aria-label="Search stickers"/></label></div>
+   <div class="search-row"><label class="search"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search stickers, emotions, Kiswahili…" aria-label="Search stickers"/></label><select class="sort" id="sortSelect" aria-label="Sort stickers"><option value="default">Popular picks</option><option value="newest">Newest</option><option value="name">A–Z</option></select></div>
    <div class="categories" id="categories" aria-label="Sticker categories"></div>
    <div id="status" class="status" role="status">Loading stickers…</div>
    <div id="stickerGrid" class="sticker-grid" aria-live="polite"></div>
    <button class="load-more" id="loadMore" type="button" hidden>Load more stickers</button>
-   <div class="attribution"><span>ⓘ</span> Sticker artwork is identified by its pack and license. <a href="/credits.html">View attributions</a></div>
+   <div class="attribution"><span>ⓘ</span> Sticker artwork is identified by its pack and license. <a href="/credits.html">View attributions</a> · <a href="/embed-demo.html">Try embedded picker</a></div>
   </div>
  </main>
  <aside class="preview">
@@ -31,7 +33,17 @@
   <div class="chat-window"><div class="chat-date">Today</div><div class="bubble incoming">Hey! How are you? 👋</div><div class="bubble outgoing">Doing great. Check this out!</div><div class="sent-sticker" id="sentSticker"><img src="/assets/original/sl-happy.svg" alt="Happy sticker"/></div></div>
   <div class="composer"><button type="button" id="randomSticker" aria-label="Send random sticker">☺</button><span>Select a sticker to send</span><b>➤</b></div>
   <p class="preview-note">A picker demo. SautiLink messaging integration will use the sticker ID and API.</p>
-  <div class="selected-meta"><span>SELECTED</span><b id="selectedName">Happy</b><button id="favoriteSelected" type="button" aria-label="Save favorite">♡</button></div>
+  <div class="selected-meta"><span>SELECTED</span><b id="selectedName">Happy</b><button id="favoriteSelected" type="button" aria-label="Save favorite">♡</button></div><div class="selected-actions"><button type="button" id="copySticker">Copy link</button><button type="button" id="shareSticker">Share</button></div>
  </aside>
-</div><script type="module" src="/picker.js"></script>
+</div>
+<dialog id="detailDialog" class="detail-dialog" aria-label="Sticker details">
+ <button class="dialog-close" id="closeDetails" type="button" aria-label="Close details">×</button>
+ <img id="detailImage" alt="" class="detail-art"/>
+ <h2 id="detailTitle">Sticker</h2>
+ <p id="detailPack"></p>
+ <p class="detail-description" id="detailLicense"></p>
+ <div class="detail-actions"><button id="detailUse" type="button">Use sticker</button><button id="detailCopy" type="button">Copy link</button><button id="detailFavorite" type="button">♡ Favorite</button></div>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="/studio-v2.js"></script>
 </body></html>

@@ -17,7 +17,10 @@ async function check(){
  assert.ok(ready,"Local server did not start");
  const catalog=JSON.parse(await readFile(new URL("../data/catalog.json",import.meta.url),"utf8"));
  const index=await fetch(base+"/");assert.equal(index.status,200);assert.match(await index.text(),/Every feeling/);
- const picker=await fetch(base+"/picker.js");assert.equal(picker.status,200);assert.match(await picker.text(),/sticker-selected/);
+ const picker=await fetch(base+"/studio-v2.js");assert.equal(picker.status,200);assert.match(await picker.text(),/sticker-selected/);
+ for(const asset of ["/studio-v2.css","/sdk.js","/embed.js","/embed-demo.html"]){const response=await fetch(base+asset);assert.equal(response.status,200,asset);}
+ const legacyCats=await(await fetch(base+"/api/v1/categories")).json();assert.ok(legacyCats.data.every(v=>typeof v==="string"));
+ const detailedCats=await(await fetch(base+"/api/v1/categories?with_counts=true")).json();assert.ok(detailedCats.data.every(v=>Number.isInteger(v.count)));
  const packs=await (await fetch(base+"/api/v1/packs")).json();assert.equal(packs.data.length,catalog.packs.length);
  const stickers=await (await fetch(base+"/api/v1/stickers?limit=60")).json();
  assert.equal(stickers.pagination.total,catalog.stickers.length);
