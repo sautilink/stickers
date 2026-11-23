@@ -1,10 +1,18 @@
-// Optional worker adapter. Do not deploy until Cloudflare configuration is reviewed.
+// Optional adapter for the later Cloudflare connection step. No deployment is configured.
 import catalog from "../data/catalog.json" with {type:"json"};
 import {createEngine} from "./engine.mjs";
-export default {async fetch(request,env){
- const allowedOrigins=String(env.ALLOWED_ORIGINS||"https://sautilink.com,https://www.sautilink.com").split(",").map(x=>x.trim()).filter(Boolean);
- const engine=createEngine(catalog,{allowedOrigins});
- const p=new URL(request.url).pathname;
- if(p.startsWith("/api/")||p==="/health"||p.startsWith("/assets/original/"))return engine.fetch(request);
- return env.ASSETS?env.ASSETS.fetch(request):new Response("Static assets binding not configured",{status:503});
-}};
+let cachedConfig;
+let cachedEngine;
+export default {
+ async fetch(request,env){
+  const config=String(env.ALLOWED_ORIGINS||"https://sautilink.com,https://www.sautilink.com");
+  if(cachedConfig!==config||!cachedEngine){
+   const allowedOrigins=config.split(",").map(x=>x.trim()).filter(Boolean);
+   cachedEngine=createEngine(catalog,{allowedOrigins});
+   cachedConfig=config;
+  }
+  const path=new URL(request.url).pathname;
+  if(path.startsWith("/api/")||path==="/health"||path.startsWith("/assets/original/"))return cachedEngine.fetch(request);
+  return env.ASSETS?env.ASSETS.fetch(request):new Response("Static assets binding not configured",{status:503});
+ }
+};
