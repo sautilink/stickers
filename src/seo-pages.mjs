@@ -54,7 +54,7 @@ function document(head,body){
 const thumb=(s,base)=>'<a class="sticker-card" href="/stickers/'+encodeURIComponent(s.id)+'">'+
  '<img src="'+esc(base+s.asset_path)+'" width="110" height="110" loading="lazy" decoding="async" alt="'+esc(s.title)+' animated sticker">'+
  '<strong>'+esc(s.title)+'</strong></a>';
-const pageHeaders={"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300, stale-while-revalidate=600","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin"};
+const pageHeaders={"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300, stale-while-revalidate=600","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin","x-frame-options":"DENY","permissions-policy":"camera=(), microphone=(), geolocation=(), payment=()","content-security-policy":"default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://sautilink.com data:; font-src 'self' https://fonts.gstatic.com; upgrade-insecure-requests"};
 const textHeaders={"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=3600","x-content-type-options":"nosniff"};
 const xmlHeaders={"content-type":"application/xml; charset=utf-8","cache-control":"public, max-age=3600","x-content-type-options":"nosniff"};
 
@@ -82,6 +82,11 @@ export function createSeoPages(catalog,{publicSiteUrl=DEFAULT_SITE}={}){
   const {data,html}=header(heading,description,canonical,urlFor(s.asset_path));
   const related=catalog.stickers.filter(x=>x.id!==s.id&&(x.pack_id===s.pack_id||x.category===s.category)).slice(0,12);
   data["@graph"][2]["image"]={"@type":"ImageObject","url":urlFor(s.asset_path),"name":s.title+" animated sticker"};
+  data["@graph"].push({"@type":"BreadcrumbList","itemListElement":[
+    {"@type":"ListItem","position":1,"name":"Sticker Studio","item":base+"/"},
+    {"@type":"ListItem","position":2,"name":pack.name,"item":base+"/packs/"+pack.id},
+    {"@type":"ListItem","position":3,"name":s.title,"item":canonical}
+  ]});
   const ld='<script type="application/ld+json">'+json(data)+'</script>';
   const head=html.replace(/<script type="application\/ld\+json">.*?<\/script>/,ld);
   return document(head,'<nav class="crumb" aria-label="Breadcrumb"><a href="/">Sticker Studio</a> / <a href="/packs/'+pack.id+'">'+esc(pack.name)+'</a> / '+esc(s.title)+'</nav>'+
@@ -102,6 +107,10 @@ export function createSeoPages(catalog,{publicSiteUrl=DEFAULT_SITE}={}){
   const title=p.name+" Animated Stickers | SautiLink";
   const {data,html}=header(title,description,canonical,urlFor(items[0]?.asset_path||"/"));
   data["@graph"][2]["mainEntity"]={"@type":"ItemList","numberOfItems":items.length,"itemListElement":items.slice(0,40).map((s,i)=>({"@type":"ListItem","position":i+1,"name":s.title,"url":urlFor("/stickers/"+s.id)}))};
+  data["@graph"].push({"@type":"BreadcrumbList","itemListElement":[
+    {"@type":"ListItem","position":1,"name":"Sticker Studio","item":base+"/"},
+    {"@type":"ListItem","position":2,"name":p.name,"item":canonical}
+  ]});
   const ld='<script type="application/ld+json">'+json(data)+'</script>';
   const head=html.replace(/<script type="application\/ld\+json">.*?<\/script>/,ld);
   return document(head,'<nav class="crumb" aria-label="Breadcrumb"><a href="/">Sticker Studio</a> / '+esc(p.name)+'</nav>'+
