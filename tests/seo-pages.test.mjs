@@ -34,7 +34,7 @@ test("pack pages render accessible server-side links, meta and structured data",
  const html=await res.text();
  assert.match(html,/<h1>SautiLink Originals<\/h1>/);
  assert.match(html,/<a class="sticker-card" href="\/stickers\/sl-happy"/);
- assert.match(html,/<link rel="canonical" href="https:\/\/sautilink-stickers/);
+ assert.ok(html.includes('<link rel="canonical" href="'+site+'/packs/sautilink-originals"'));
  assert.match(html,/<meta name="description"/);
  assert.match(html,/<script type="application\/ld\+json">/);
  assert.match(html,/font.*Inter/);
