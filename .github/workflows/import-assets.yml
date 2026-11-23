@@ -1,0 +1,38 @@
+name: Import licensed sticker assets
+on:
+  push:
+    branches: ["feat/sticker-engine-foundation"]
+    paths: [".github/workflows/import-assets.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Import curated Google animated WebP
+        run: npm run import:noto
+      - name: Import MIT-licensed animated Minicons WebP
+        run: npm run import:minicons
+      - name: Validate imported catalog
+        run: |
+          npm run validate
+          npm test
+      - name: Commit artwork and source attributions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/catalog.json public/assets/noto public/assets/minicons
+          if git diff --cached --quiet; then
+            echo "Nothing new to commit"
+          else
+            git commit -m "assets: import licensed animated stickers [skip ci]"
+            git push origin HEAD:feat/sticker-engine-foundation
+          fi

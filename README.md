@@ -1,53 +1,49 @@
 # SautiLink Sticker Engine
 
-First-party animated sticker provider for the **SautiLink ecosystem**. One independent API can serve Web, Android, Chats, Comments, and Rooms. This repository contains the initial **development implementation**, not a deployed service.
+Independent animated sticker catalog, picker, and first-party provider for SautiLink Web, Android, Chats, Comments, and Rooms. **This is a development preview, not a production deployment.**
 
-## Built in the foundation
-- Read-only catalog API for sticker packs, stickers, search, categories, licenses, and health
-- Eight original animated SautiLink SVG reactions (fully local, no external provider request)
-- iOS-inspired, responsive sticker explorer and picker demo
-- Client-side favorites/recent list in the picker demo
-- Curated importer for Google's Noto animated WebP assets, downloaded and stored locally with attribution + SHA-256
-- Zero runtime npm dependencies; Node 22+ for local development
-- Optional Cloudflare Worker adapter; **no Cloudflare project, R2, DNS, or deployment is connected yet**
+## Included
+- Read-only pack, sticker, search, categories and attribution endpoints
+- 8 original animated SautiLink SVG reactions
+- Responsive picker demo with local favorites and recently-used stickers
+- Curated Google Noto WebP importer (CC BY 4.0)
+- Pinned 112-asset Minicons Animated WebP importer (MIT)
+- Zero runtime npm dependencies; Node 22+ preview
+- Optional Cloudflare Worker adapter, not deployed or connected
 
 ## Local development
-
-Run with Node.js 22+:
-
     npm run validate
     npm test
     npm run dev
 
-Open http://localhost:8787. The local preview uses no cloud service.
+Visit http://localhost:8787
 
-## Import Noto stickers to local storage
-
+## Import licensed stickers to SautiLink's local catalog
     npm run import:noto
+    npm run import:minicons
     npm run validate
     npm test
 
-For a small trial: npm run import:noto -- --limit=4
+Try smaller batches: npm run import:noto -- --limit=4 and npm run import:minicons -- --limit=8. Importers fetch files at build time, validate WebP signatures and size bounds, compute SHA-256, and save files to public/assets/*. **No third-party API is contacted at request time.** Do not imply SautiLink owns third-party artwork. Retain attribution notices.
 
-The importer downloads curated 512px animated WebP from Google's official fonts.gstatic.com host and saves them to public/assets/noto. Assets are served by the **SautiLink API's own origin** at runtime. Review data/catalog.json and commit imported files only after attribution/license review. Do not import undocumented third-party sticker packs.
+An asset-import workflow runs once on the development branch after the workflow is added, and may be manually dispatched later. CI verifies catalog integrity; do not merge until all checks pass.
 
 ## API
-- GET /api/v1/health
+- GET /health or /api/v1/health
 - GET /api/v1/packs
 - GET /api/v1/packs/:id
-- GET /api/v1/stickers?q=upendo&category=love&pack=sautilink-originals&limit=20&cursor=0
+- GET /api/v1/stickers?pack=&category=&q=upendo&cursor=0&limit=20
 - GET /api/v1/stickers/:id
 - GET /api/v1/categories
 - GET /api/v1/licenses
-- GET /assets/original/sl-love.svg
 
-The response includes a stable sticker id, pack id, category, license, and an asset URL. Chats, comments and Rooms should persist **sticker_id** and resolve the asset from the API, not trust arbitrary media URLs sent by clients.
+All clients persist stable **sticker_id** + pack_id, then retrieve the sticker and licensed asset from the first-party API. Never accept arbitrary client-supplied asset URLs.
 
-## Boundaries
-No user account authorization, uploads, private favorites sync, moderation queue, anti-abuse throttling, persistent database, or production deployment is in this version. Do not expose a write API until authentication, quotas, moderation, storage validation, and content licensing are implemented. Favorite/recent features in this demo use localStorage, not server sync.
+## Before production
+No production database, authenticated favorites, uploads, moderation queue, anti-abuse limits, storage sync, or main SautiLink app integration has been deployed. Browser demo favorites/recents are stored only in the local device. Before production integrate auth, storage/R2, licensing audit, permissions, moderation, quota policy and media optimization.
 
-## Legal and supply chain
-Original starter artwork is project artwork for SautiLink Corporation. Imported Noto animated emoji artwork is © Google LLC under **CC BY 4.0**; retain attribution and source reference. Importing assets does not transfer copyright or trademark ownership. See ATTRIBUTION.md and SECURITY.md.
+## Cloudflare
+No Cloudflare account, DNS, R2, Workers deployment, or database binding is connected. The optional src/worker.mjs adapter will be connected only after the next infrastructure configuration step and approval. See docs/INTEGRATION.md.
 
-## Planned Cloudflare connection
-After code review and approval, configure Workers Assets, R2 and a catalog database, the domain, CORS allowlist and release pipeline. No secrets belong in GitHub. See docs/INTEGRATION.md for app integration; ask before connecting Cloudflare.
+## Licensing
+Starter original artwork is project artwork for SautiLink Corporation. Minicons is MIT, © Tanzim Siam, with full license in licenses/minicons-MIT.txt. Google Noto Animated Emoji is © Google LLC, CC BY 4.0. See ATTRIBUTION.md. The application's own source repository remains **UNLICENSED** (all rights reserved).

@@ -9,7 +9,7 @@ const get=(p,init={})=>app.fetch(new Request("https://stickers.example"+p,init))
 test("catalog",()=>assert.equal(validateCatalog(c),true));
 test("health",async()=>assert.equal((await (await get("/health")).json()).status,"ok"));
 test("safe animated originals",async()=>{for(const id of originalIds){const svg=originalSvg(id);assert.match(svg,/^<svg/);assert.doesNotMatch(svg,/<script|onload=|xlink:href=/i);assert.equal((await get("/assets/original/"+id+".svg")).status,200);}});
-test("packs have covers",async()=>{const r=await (await get("/api/v1/packs")).json();assert.equal(r.data.length,1);assert.ok(r.data[0].cover_url.includes("sl-happy"));});
+test("packs have covers",async()=>{const r=await (await get("/api/v1/packs")).json();assert.ok(r.data.length>=1);assert.ok(r.data.find(p=>p.id==="sautilink-originals").cover_url.includes("sl-happy"));});
 test("pack detail works",async()=>{const r=await get("/api/v1/packs/sautilink-originals");assert.equal(r.status,200);const d=await r.json();assert.equal(d.data.stickers.length,8);});
 test("English and Swahili search",async()=>{assert.equal((await (await get("/api/v1/stickers?q=love")).json()).data[0].id,"sl-love");assert.equal((await (await get("/api/v1/stickers?q=upendo")).json()).data[0].id,"sl-love");});
 test("pagination and validation",async()=>{const r=await (await get("/api/v1/stickers?limit=2")).json();assert.equal(r.data.length,2);assert.equal(r.pagination.next_cursor,"2");assert.equal((await get("/api/v1/stickers?cursor=-1")).status,400);});

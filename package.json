@@ -12,7 +12,8 @@
     "start": "node src/server.mjs",
     "test": "node --test",
     "validate": "node scripts/validate-catalog.mjs",
-    "import:noto": "node scripts/import-noto.mjs"
+    "import:noto": "node scripts/import-noto.mjs",
+    "import:minicons": "node scripts/import-minicons.mjs"
   },
   "license": "UNLICENSED"
 }
