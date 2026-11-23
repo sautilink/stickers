@@ -73,10 +73,13 @@ async function refresh(append=false){
   const data=await r.json();if(reqId!==state.requestId)return;
   let list=append?[...state.items,...data.data]:data.data;
   if(state.tab==="favorites"||state.tab==="recent"){
-   const ids=state.tab==="favorites"?favorites():recent();
-   // For small demo catalogs, browse all matching stickers before local filtering.
-   if(!append){const all=await fetch("/api/v1/stickers?limit=60");if(all.ok){const json=await all.json();list=json.data;}}
-   list=list.filter(s=>ids.includes(s.id)).sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));
+   const ids=(state.tab==="favorites"?favorites():recent()).filter(id=>/^[a-z0-9-]{1,90}$/.test(id)).slice(0,80);
+   const details=await Promise.all(ids.map(async id=>{
+    try{const result=await fetch("/api/v1/stickers/"+encodeURIComponent(id));return result.ok?(await result.json()).data:null;}catch{return null;}
+   }));
+   const query=term.normalize("NFKC").toLocaleLowerCase("en");
+   list=details.filter(Boolean).filter(s=>(!state.category||s.category===state.category)&&
+    (!state.pack||s.pack_id===state.pack)&&(!query||[s.title,s.emoji,...s.tags].join(" ").normalize("NFKC").toLocaleLowerCase("en").includes(query)));
   }
   if(reqId!==state.requestId)return;
   state.items=list;state.total=state.tab==="all"||state.tab==="pack"?data.pagination.total:list.length;

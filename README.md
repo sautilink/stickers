@@ -14,6 +14,7 @@ Independent animated sticker catalog, picker, and first-party provider for Sauti
 ## Local development
     npm run validate
     npm test
+    npm run smoke
     npm run dev
 
 Visit http://localhost:8787
