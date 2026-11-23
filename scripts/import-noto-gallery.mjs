@@ -50,11 +50,13 @@ function categoryFor(googleGroup,name){
 const catalog=JSON.parse(await readFile(catalogFile,"utf8"));validateCatalog(catalog);
 const current=new Set(catalog.stickers.map(s=>s.id));
 const pools=Object.fromEntries(Object.keys(limits).map(key=>[key,[]]));
+const seenCodes=new Set();
 for(const group of groups){
  for(const entry of group.emoji||[]){
   if(entry.animated!==true||!Array.isArray(entry.base)||!entry.base.length)continue;
   const code=entry.base.map(n=>Number(n).toString(16)).join("_");
-  if(!/^[a-f0-9_]+$/.test(code)||current.has("noto-"+code.replaceAll("_","-")))continue;
+  if(!/^[a-f0-9_]+$/.test(code)||seenCodes.has(code)||current.has("noto-"+code.replaceAll("_","-")))continue;
+  seenCodes.add(code);
   const name=records.get(code)?.title||entry.shortcodes?.[0]?.replaceAll(":","").replaceAll("-"," ")||"Animated emoji";
   const category=categoryFor(group.group,name);
   if(!category)continue;
