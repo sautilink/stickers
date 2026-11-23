@@ -54,7 +54,7 @@ for(const group of groups){
  for(const entry of group.emoji||[]){
   if(entry.animated!==true||!Array.isArray(entry.base)||!entry.base.length)continue;
   const code=entry.base.map(n=>Number(n).toString(16)).join("_");
-  if(!/^[a-f0-9_]+$/.test(code)||current.has("noto-"+code))continue;
+  if(!/^[a-f0-9_]+$/.test(code)||current.has("noto-"+code.replaceAll("_","-")))continue;
   const name=records.get(code)?.title||entry.shortcodes?.[0]?.replaceAll(":","").replaceAll("-"," ")||"Animated emoji";
   const category=categoryFor(group.group,name);
   if(!category)continue;
@@ -94,7 +94,7 @@ async function download(entry){
    animals:["wanyama"],food:["chakula"],activities:["michezo","sherehe"],
    travel:["safari"],objects:["vifaa"],symbols:["alama"]
   };
-  saved.push({id:"noto-"+code,pack_id:"noto-"+category,title:name[0].toUpperCase()+name.slice(1),
+  saved.push({id:"noto-"+code.replaceAll("_","-"),pack_id:"noto-"+category,title:name[0].toUpperCase()+name.slice(1),
    emoji,tags:[name,...shortcodes.map(s=>s.replaceAll(":","").replaceAll("-"," ")),...(words[category]||[])],
    category,sort_order:500+selected.indexOf(entry),format:"webp",animated:true,width:512,height:512,
    asset_path:"/assets/noto/"+code+".webp",file_sha256:createHash("sha256").update(content).digest("hex"),
