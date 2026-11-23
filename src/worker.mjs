@@ -15,7 +15,7 @@ export default {
    cachedConfig=config;
   }
   const path=new URL(request.url).pathname;
-  const siteUrl=String(env.PUBLIC_SITE_URL||"https://sautilink-stickers.dr-charles-services.workers.dev");
+  const siteUrl=String(env.PUBLIC_SITE_URL||"https://stickers.sautilink.com");
   if(!cachedSeo||cachedSite!==siteUrl){cachedSeo=createSeoPages(catalog,{publicSiteUrl:siteUrl});cachedSite=siteUrl;}
   if(path==="/sitemap.xml"||path==="/robots.txt"||path.startsWith("/packs/")||path.startsWith("/stickers/"))return cachedSeo.fetch(request);
   if(path.startsWith("/api/")||path==="/health"||path.startsWith("/assets/original/"))return cachedEngine.fetch(request);

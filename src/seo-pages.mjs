@@ -8,7 +8,7 @@ const xml = esc;
 const json = object => JSON.stringify(object).replace(/</g,"\\u003c").replace(/>/g,"\\u003e").replace(/&/g,"\\u0026");
 const SITE_NAME="SautiLink Stickers";
 const LOGO="https://sautilink.com/logo.png";
-const DEFAULT_SITE="https://sautilink-stickers.dr-charles-services.workers.dev";
+const DEFAULT_SITE="https://stickers.sautilink.com";
 const ID=/^[a-z0-9-]{1,90}$/;
 function siteBase(url){
   try{

@@ -7,7 +7,7 @@ for(const filename of ["public/index.html","public/credits.html","public/embed-d
  files[filename]=await readFile(new URL(filename,root),"utf8");
 }
 const config=JSON.parse(files["wrangler.jsonc"]),site=config.vars.PUBLIC_SITE_URL;
-assert.ok(site.startsWith("https://"),"Production canonical must be HTTPS");
+assert.equal(site,"https://stickers.sautilink.com","Canonical must use official domain");
 const home=files["public/index.html"],credits=files["public/credits.html"],demo=files["public/embed-demo.html"];
 for(const html of [home,credits]){
  assert.match(html,/<title>[^<]+<\/title>/);
@@ -17,6 +17,7 @@ for(const html of [home,credits]){
  assert.match(html,/<meta property="og:title"/);
 }
 assert.ok(home.includes('href="'+site+'/'),'Homepage canonical must equal active public host');
+for(const html of [home,credits]) assert.ok(!html.includes('dr-charles-services.workers.dev'),'Old host must not appear in public SEO metadata');
 assert.match(home,/<script type="application\/ld\+json">/);
 assert.match(home,/<link rel="stylesheet" href="\/pilot-theme.css"/);
 assert.match(home,/<a href="\/packs\//);

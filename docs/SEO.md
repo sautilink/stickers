@@ -2,9 +2,9 @@
 
 ## Canonical domain
 
-The currently confirmed deployment hostname is https://sautilink-stickers.dr-charles-services.workers.dev/.
+The Cloudflare dashboard shows both `stickers.sautilink.com` and `www.stickers.sautilink.com` configured as production custom domains on this Worker.
 PUBLIC_SITE_URL, homepage/credits canonicals, OG URLs and sitemap are intentionally aligned to this active hostname.
-Do not change canonical to stickers.sautilink.com until that Cloudflare custom domain is genuinely live. After connecting it, update PUBLIC_SITE_URL, homepage/credits canonical + OG URLs together; optionally redirect old host or implement consistent canonical consolidation.
+The canonical URLs have now been updated to `stickers.sautilink.com`. Check actual HTTP/TLS responses after deployment; configure a 301 redirect for the `www.stickers.sautilink.com` alias so each public URL has only one primary host.
 
 ## Crawlable content
 
@@ -27,7 +27,7 @@ The shared visual tokens mirror SautiLink Pilot: Inter from Google Fonts with sy
 3. Submit the live sitemap URL to both; use URL Inspection and check crawl reports for invalid canonicals and 404 errors.
 4. Use Google's Rich Results Test and Schema Markup Validator for representative pages; valid JSON-LD does not guarantee rich results.
 5. Test Search Console performance, web vitals and Lighthouse using real networks/devices; fix measured bottlenecks.
-6. On custom domain activation, move canonicals, Open Graph URLs and sitemap together and prevent competing duplicate hosts.
+6. Confirm new canonical URLs on the live site and prevent competing duplicate hosts.
 
 Optional IndexNow automation needs site ownership verification and a validated IndexNow key. The key cannot be invented. No search engine guarantees instantaneous indexing or top rankings.
 

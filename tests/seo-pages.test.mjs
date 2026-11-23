@@ -4,7 +4,7 @@ import {readFile} from "node:fs/promises";
 import {createSeoPages} from "../src/seo-pages.mjs";
 
 const catalog=JSON.parse(await readFile(new URL("../data/catalog.json",import.meta.url),"utf8"));
-const site="https://sautilink-stickers.dr-charles-services.workers.dev";
+const site="https://stickers.sautilink.com";
 const renderer=createSeoPages(catalog,{publicSiteUrl:site});
 const fetchPath=(path,method="GET")=>renderer.fetch(new Request(site+path,{method}));
 const locs=xml=>[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
