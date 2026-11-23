@@ -118,7 +118,7 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
     }
     if (path === "/api/v1/health" || path === "/health") return response(req,{
       status:"ok",service:"sautilink-stickers",version:"0.2.0"
-    },"200","no-store");
+    },200,"no-store");
     if (path === "/api/v1/stats") return response(req,{data:{
       packs:packs.length, stickers:stickers.length, animated:stickers.filter(s=>s.animated).length,
       categories:counts, catalog_updated_at:catalog.updated_at
@@ -127,7 +127,7 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
       pack_id:p.id,author:p.author,license:p.license,license_url:p.license_url,
       attribution:p.attribution,source_url:p.source_url
     }))});
-    if (path === "/api/v1/categories") return response(req,{data:categories.map(id=>({id,count:counts[id]}))});
+    if (path === "/api/v1/categories") return response(req,{data:getParam(url,"with_counts")==="true"?categories.map(id=>({id,count:counts[id]})):categories,counts});
     if (path === "/api/v1/packs") return response(req,{data:packs.map(p=>asPack(p,url))});
     if (path.startsWith("/api/v1/packs/")) {
       const id = path.slice("/api/v1/packs/".length);

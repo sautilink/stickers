@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SautiLink Sticker Picker — Integration Demo</title><meta name="robots" content="noindex"/>
+<style>body{font:15px Inter,system-ui,sans-serif;background:#f5f7fa;color:#293449;min-height:100vh;display:grid;place-items:center;margin:0}
+main{max-width:550px;width:min(90vw,550px);background:white;padding:28px;border:1px solid #e9edf1;border-radius:23px}
+p{color:#747f8f;line-height:1.6}.chat{background:#f3f5fb;border-radius:16px;padding:20px;min-height:170px}
+.bubble{margin:0 0 18px;border-radius:16px;background:#dddff9;padding:11px 15px;display:inline-block}.sticker-message{display:block;height:126px}
+.sticker-message img{height:122px;width:122px;object-fit:contain}.compose{margin-top:20px;display:flex;align-items:center;gap:12px}
+.note{font-size:11px;color:#9aa5b1}</style></head>
+<body><main><h1>Sticker Picker Demo</h1><p>Try our reusable, first-party sticker picker — ready to embed in SautiLink Web.</p>
+<div class="chat"><div class="bubble">Hey 👋 Choose a sticker!</div><div id="message" class="sticker-message" aria-live="polite"></div></div>
+<div class="compose"><sautilink-sticker-picker id="picker"></sautilink-sticker-picker><small>Click Stickers to open the picker</small></div>
+<p class="note">This demo does not send messages or change user accounts. It shows a picker event and a local preview.</p><a href="/">Return to Sticker Studio</a></main>
+<script type="module" src="/embed.js"></script>
+<script type="module">
+const picker=document.getElementById("picker"),target=document.getElementById("message");
+picker.addEventListener("sautilink:sticker-select",async ({detail})=>{
+ const response=await fetch("/api/v1/stickers/"+encodeURIComponent(detail.sticker_id));
+ if(!response.ok)return;
+ const {data}=await response.json();
+ const image=document.createElement("img");image.alt=data.title;image.src=data.asset_url;
+ target.replaceChildren(image);
+ console.info("Sticker payload:",detail);
+});
+</script></body></html>

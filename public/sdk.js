@@ -27,7 +27,7 @@ export function createStickerClient(baseUrl=globalThis.location?.origin,fetcher=
   return Object.freeze({
     packs:()=>api("/api/v1/packs"),
     pack:id=>api("/api/v1/packs/"+encodeURIComponent(id)),
-    categories:()=>api("/api/v1/categories"),
+    categories:()=>api("/api/v1/categories",{with_counts:"true"}),
     featured:()=>api("/api/v1/featured"),
     stats:()=>api("/api/v1/stats"),
     licenses:()=>api("/api/v1/licenses"),

@@ -21,3 +21,8 @@
 - The catalog and credits must continue to display attribution.
 
 The SautiLink Sticker Engine is independent at runtime but source artwork licenses remain in force. Importing a sticker does not grant exclusive artwork ownership or rights to others' brands/trademarks.
+
+## Google Emoji metadata
+- Official Unicode emoji picker metadata from https://github.com/googlefonts/emoji-metadata (Apache License 2.0).
+- Pinned revision 173b9b26e8fcbcbe64e1ecbf073a21a96b95c6b1 for the 17.0 animated catalogue.
+- Unicode names and group labels from https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt © Unicode Inc.; see https://www.unicode.org/terms_of_use.html.

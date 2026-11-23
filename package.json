@@ -15,7 +15,8 @@
     "import:noto": "node scripts/import-noto.mjs",
     "import:minicons": "node scripts/import-minicons.mjs",
     "import:gallery": "node scripts/import-noto-gallery.mjs",
-    "smoke": "node tests/smoke.mjs"
+    "smoke": "node tests/smoke.mjs",
+    "check:ui": "node --check public/studio-v2.js && node --check public/embed.js && node --check public/sdk.js"
   },
   "license": "UNLICENSED"
 }

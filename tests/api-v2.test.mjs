@@ -13,8 +13,9 @@ test("stats match catalog",async()=>{
  assert.equal(Object.values(data.categories).reduce((a,b)=>a+b,0),catalog.stickers.length);
 });
 test("category counts",async()=>{
- const {data}=await(await get("/api/v1/categories")).json();
+ const {data}=await(await get("/api/v1/categories?with_counts=true")).json();
  assert.ok(data.length>1);assert.equal(data.reduce((n,c)=>n+c.count,0),catalog.stickers.length);
+ const legacy=await(await get("/api/v1/categories")).json();assert.ok(legacy.data.every(x=>typeof x==="string"));
 });
 test("bulk sticker lookup preserves client favorites order",async()=>{
  const {data}=await(await get("/api/v1/stickers?ids=sl-love,sl-happy,sl-cool")).json();
