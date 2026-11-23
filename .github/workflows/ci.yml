@@ -17,3 +17,5 @@ jobs:
       - run: npm test
       - run: npm run smoke
       - run: npm run check:ui
+      - run: npm run seo:audit
+      - run: npx --yes wrangler@4.167.0 deploy --dry-run --outdir .wrangler-dry-run
