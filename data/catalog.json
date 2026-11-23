@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-23",
+  "packs": [
+    {
+      "id": "sautilink-originals",
+      "name": "SautiLink Originals",
+      "description": "Animated reactions made for SautiLink.",
+      "author": "SautiLink Corporation",
+      "license": "SautiLink original artwork; all rights reserved",
+      "license_url": null,
+      "attribution": "Original artwork for SautiLink Corporation",
+      "source_url": "https://sautilink.com",
+      "featured": true,
+      "sort_order": 0,
+      "cover_sticker_id": "sl-happy"
+    }
+  ],
+  "stickers": [
+    {
+      "id": "sl-happy",
+      "pack_id": "sautilink-originals",
+      "title": "Happy",
+      "emoji": "😊",
+      "tags": [
+        "happy",
+        "smile",
+        "furaha",
+        "joy"
+      ],
+      "category": "reactions",
+      "sort_order": 0,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-happy.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    },
+    {
+      "id": "sl-laugh",
+      "pack_id": "sautilink-originals",
+      "title": "Laugh Out Loud",
+      "emoji": "😂",
+      "tags": [
+        "laugh",
+        "lol",
+        "cheka",
+        "funny"
+      ],
+      "category": "reactions",
+      "sort_order": 1,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-laugh.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    },
+    {
+      "id": "sl-love",
+      "pack_id": "sautilink-originals",
+      "title": "Love",
+      "emoji": "😍",
+      "tags": [
+        "love",
+        "heart",
+        "upendo",
+        "cute"
+      ],
+      "category": "love",
+      "sort_order": 2,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-love.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    },
+    {
+      "id": "sl-wow",
+      "pack_id": "sautilink-originals",
+      "title": "Wow!",
+      "emoji": "😮",
+      "tags": [
+        "wow",
+        "shocked",
+        "surprise",
+        "ajabu"
+      ],
+      "category": "reactions",
+      "sort_order": 3,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-wow.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    },
+    {
+      "id": "sl-cool",
+      "pack_id": "sautilink-originals",
+      "title": "Cool",
+      "emoji": "😎",
+      "tags": [
+        "cool",
+        "style",
+        "poa",
+        "sunglasses"
+      ],
+      "category": "reactions",
+      "sort_order": 4,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-cool.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    },
+    {
+      "id": "sl-sad",
+      "pack_id": "sautilink-originals",
+      "title": "Sad",
+      "emoji": "🥺",
+      "tags": [
+        "sad",
+        "sorry",
+        "huzuni",
+        "pole"
+      ],
+      "category": "reactions",
+      "sort_order": 5,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-sad.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    },
+    {
+      "id": "sl-party",
+      "pack_id": "sautilink-originals",
+      "title": "Let's Celebrate",
+      "emoji": "🥳",
+      "tags": [
+        "party",
+        "celebration",
+        "sherehe",
+        "congrats"
+      ],
+      "category": "celebration",
+      "sort_order": 6,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-party.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    },
+    {
+      "id": "sl-wave",
+      "pack_id": "sautilink-originals",
+      "title": "Hey There",
+      "emoji": "👋",
+      "tags": [
+        "wave",
+        "hello",
+        "hi",
+        "mambo",
+        "salamu"
+      ],
+      "category": "greetings",
+      "sort_order": 7,
+      "format": "svg",
+      "animated": true,
+      "width": 256,
+      "height": 256,
+      "asset_path": "/assets/original/sl-wave.svg",
+      "file_sha256": null,
+      "license": "SautiLink original artwork; all rights reserved",
+      "source_url": "https://sautilink.com"
+    }
+  ]
+}
