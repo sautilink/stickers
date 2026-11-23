@@ -1,0 +1,20 @@
+{
+  "name": "@sautilink/stickers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "First-party sticker API and web picker for SautiLink",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node src/server.mjs",
+    "start": "node src/server.mjs",
+    "test": "node --test",
+    "validate": "node scripts/validate-catalog.mjs",
+    "import:noto": "node scripts/import-noto.mjs",
+    "import:minicons": "node scripts/import-minicons.mjs",
+    "smoke": "node tests/smoke.mjs"
+  },
+  "license": "UNLICENSED"
+}

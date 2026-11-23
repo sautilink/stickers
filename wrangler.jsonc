@@ -1,0 +1,14 @@
+{
+  "name": "sautilink-stickers",
+  "main": "./src/worker.mjs",
+  "compatibility_date": "2026-11-23",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/health", "/assets/original/*"]
+  },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://sautilink.com,https://www.sautilink.com"
+  }
+}
