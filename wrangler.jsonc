@@ -17,7 +17,7 @@
     ]
   },
   "vars": {
-    "ALLOWED_ORIGINS": "https://sautilink.com,https://www.sautilink.com,https://stickers.sautilink.com,https://www.stickers.sautilink.com",
+    "ALLOWED_ORIGINS": "https://sautilink.com,https://www.sautilink.com,https://stickers.sautilink.com,https://www.stickers.sautilink.com,https://test.sautilink.com",
     "PUBLIC_SITE_URL": "https://stickers.sautilink.com"
   }
 }
