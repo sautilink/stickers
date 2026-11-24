@@ -25,6 +25,8 @@ export function createStickerClient(baseUrl=globalThis.location?.origin,fetcher=
     return payload;
   };
   return Object.freeze({
+    capabilities:()=>api("/api/v1/capabilities"),
+    emojiMap:()=>api("/api/v1/emoji-map"),
     packs:()=>api("/api/v1/packs"),
     pack:id=>api("/api/v1/packs/"+encodeURIComponent(id)),
     categories:()=>api("/api/v1/categories",{with_counts:"true"}),

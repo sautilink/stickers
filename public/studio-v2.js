@@ -1,4 +1,5 @@
 import {createStickerClient,createStickerMessage} from "/sdk.js";
+import {createStickerVisual} from "/vector-player.js";
 
 const $=id=>document.getElementById(id);
 const client=createStickerClient(location.origin);
@@ -47,8 +48,7 @@ function imageFor(sticker,{size=106}={}) {
   fallback.style.width=size+"px";fallback.style.height=size+"px";
   return fallback;
  }
- const img=document.createElement("img");img.src=urlFor(sticker);img.alt="";img.loading="lazy";
- img.width=size;img.height=size;return img;
+ return createStickerVisual({...sticker,asset_url:urlFor(sticker)},{size,lite:false});
 }
 function setNav(){
  document.querySelectorAll(".nav").forEach(el=>el.classList.toggle("active",
@@ -73,7 +73,7 @@ function renderPackTiles(){
  for(const pack of state.packs){
   const btn=document.createElement("button");btn.type="button";btn.className="pack-tile"+(state.pack===pack.id&&state.tab==="pack"?" active":"");
   btn.setAttribute("aria-label","Open pack "+pack.name);
-  const img=document.createElement("img");img.src=pack.cover_url;img.alt="";img.loading="lazy";
+  const img=createStickerVisual({id:pack.cover_id,format:pack.cover_format,emoji:pack.cover_emoji,title:pack.cover_title,asset_url:pack.cover_url},{size:52,lite});
   const span=document.createElement("span");const name=document.createElement("b");name.textContent=pack.name;
   const count=document.createElement("small");count.textContent=pack.sticker_count+" "+t("count");
   span.append(name,count);btn.append(img,span);btn.onclick=()=>setTab("pack",pack.id);root.append(btn);
@@ -189,7 +189,7 @@ async function showDetails(s){
  const dialog=$("detailDialog");
  $("detailTitle").textContent=s.title;$("detailPack").textContent=state.packs.find(p=>p.id===s.pack_id)?.name||s.pack_id;
  $("detailLicense").textContent=t("license")+": "+s.license;
- const image=$("detailImage");image.src=urlFor(s);image.alt=s.title;
+ const image=$("detailImage");image.replaceChildren(imageFor(s,{size:170}));
  $("detailFavorite").textContent=favorites().includes(s.id)?"♥ "+t("favorites"):"♡ "+t("favorites");
  $("detailUse").textContent=t("use");$("detailCopy").textContent=t("copy");
  dialog.showModal();

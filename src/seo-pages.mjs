@@ -52,7 +52,7 @@ function document(head,body){
   '</body></html>';
 }
 const thumb=(s,base)=>'<a class="sticker-card" href="/stickers/'+encodeURIComponent(s.id)+'">'+
- '<img src="'+esc(base+s.asset_path)+'" width="110" height="110" loading="lazy" decoding="async" alt="'+esc(s.title)+' animated sticker">'+
+ (s.format==="lottie"?'<span aria-hidden="true" style="font-size:58px">'+esc(s.emoji||"✨")+'</span>':'<img src="'+esc(base+s.asset_path)+'" width="110" height="110" loading="lazy" decoding="async" alt="'+esc(s.title)+' animated sticker">')+
  '<strong>'+esc(s.title)+'</strong></a>';
 const pageHeaders={"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300, stale-while-revalidate=600","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin","x-frame-options":"DENY","permissions-policy":"camera=(), microphone=(), geolocation=(), payment=()","content-security-policy":"default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://sautilink.com data:; font-src 'self' https://fonts.gstatic.com; upgrade-insecure-requests"};
 const textHeaders={"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=3600","x-content-type-options":"nosniff"};
@@ -90,7 +90,7 @@ export function createSeoPages(catalog,{publicSiteUrl=DEFAULT_SITE}={}){
   const ld='<script type="application/ld+json">'+json(data)+'</script>';
   const head=html.replace(/<script type="application\/ld\+json">.*?<\/script>/,ld);
   return document(head,'<nav class="crumb" aria-label="Breadcrumb"><a href="/">Sticker Studio</a> / <a href="/packs/'+pack.id+'">'+esc(pack.name)+'</a> / '+esc(s.title)+'</nav>'+
-   '<section class="detail-grid"><div class="art"><img src="'+esc(urlFor(s.asset_path))+'" width="288" height="288" alt="'+esc(s.title)+' animated sticker"></div>'+
+   '<section class="detail-grid"><div class="art">'+(s.format==="lottie"?'<span aria-hidden="true" style="font-size:130px">'+esc(s.emoji||"✨")+'</span>':'<img src="'+esc(urlFor(s.asset_path))+'" width="288" height="288" alt="'+esc(s.title)+' animated sticker">')+'</div>'+
    '<div><p class="eyebrow">ANIMATED STICKER</p><h1>'+esc(s.title)+'</h1><p class="lead">'+esc(description)+'</p>'+
    '<p>Collection: <a href="/packs/'+pack.id+'">'+esc(pack.name)+'</a></p>'+
    '<p>Category: '+esc(s.category)+' · Format: '+esc(s.format.toUpperCase())+'</p>'+

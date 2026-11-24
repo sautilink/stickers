@@ -1,6 +1,6 @@
 {
   "name": "@sautilink/stickers",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Independent animated sticker engine for SautiLink",
@@ -16,8 +16,11 @@
     "import:minicons": "node scripts/import-minicons.mjs",
     "import:gallery": "node scripts/import-noto-gallery.mjs",
     "smoke": "node tests/smoke.mjs",
-    "check:ui": "node --check public/studio-v2.js && node --check public/embed.js && node --check public/sdk.js",
-    "seo:audit": "node scripts/seo-audit.mjs"
+    "check:ui": "node --check public/studio-v2.js && node --check public/embed.js && node --check public/sdk.js && node --check public/vector-player.js && node --check public/emoji-lab.js",
+    "seo:audit": "node scripts/seo-audit.mjs",
+    "validate:vectors": "node scripts/validate-vectors.mjs",
+    "import:tgs": "node scripts/import-tgs.mjs",
+    "vendor:player": "node scripts/vendor-player.mjs"
   },
   "license": "UNLICENSED"
 }

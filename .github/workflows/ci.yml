@@ -14,6 +14,7 @@ jobs:
         with:
           node-version: "22"
       - run: npm run validate
+      - run: npm run validate:vectors
       - run: npm test
       - run: npm run smoke
       - run: npm run check:ui
