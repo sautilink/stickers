@@ -27,3 +27,7 @@ Client flow:
 5. Save per-user favorites/recents via the authenticated application's own APIs once they are implemented. Current browser demo favorites are device-only.
 
 Never put service-role tokens, database credentials or Cloudflare credentials in Android code.
+
+## Motion Emoji v0.3
+
+`format: lottie` identifies first-party vector animation JSON in `/assets/vector/{id}.json`. Android can integrate a compatible Lottie Compose renderer, verifying assets' HTTPS origin, file bounds, animation safety and offline handling. Inline messages can store a plain-text token like `:slv-heart:`; resolve it via the `GET /api/v1/emoji-map` allowlist. Support reduced-motion settings and limit concurrent animations. TGS is an *offline import format*, not an arbitrary live remote URL to be rendered. Telegram artwork licensing remains independent.

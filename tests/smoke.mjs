@@ -23,7 +23,15 @@ async function check(){
  assert.match(homeHtml, /\/packs\/sautilink-originals/);
  assert.match(homeHtml, /\/pilot-theme\.css/);
  const picker=await fetch(base+"/studio-v2.js");assert.equal(picker.status,200);assert.match(await picker.text(),/sticker-selected/);
- for(const asset of ["/studio-v2.css","/sdk.js","/embed.js","/embed-demo.html","/pilot-theme.css","/seo-pages.css","/embed-demo.js","/site.webmanifest"]){const response=await fetch(base+asset);assert.equal(response.status,200,asset);}
+ for(const asset of ["/studio-v2.css","/sdk.js","/embed.js","/embed-demo.html","/pilot-theme.css","/seo-pages.css","/embed-demo.js","/site.webmanifest","/emoji-lab.html","/emoji-lab.js","/emoji-lab.css","/vector-player.js","/vendor/lottie_light_canvas.min.js"]){const response=await fetch(base+asset);assert.equal(response.status,200,asset);}
+ const cap=await(await fetch(base+"/api/v1/capabilities")).json();
+ assert.equal(cap.data.inline_emoji,true);
+ const inline=await(await fetch(base+"/api/v1/emoji-map")).json();
+ assert.equal(inline.data.length,8);
+ const originals=await(await fetch(base+"/api/v1/stickers?pack=sautilink-motion-originals&limit=40")).json();
+ assert.equal(originals.data.length,8);
+ const vector=await fetch(base+originals.data[0].asset_path);
+ assert.equal(vector.status,200);assert.match(vector.headers.get("content-type"),/json/);
  const robots=await (await fetch(base+"/robots.txt")).text();
  assert.match(robots, /Sitemap:/);assert.match(robots,/Disallow: \/api\//);
  const sitemapResponse=await fetch(base+"/sitemap.xml");

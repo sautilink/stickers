@@ -36,3 +36,13 @@ Import existing licensed assets at build time with npm run import:gallery; the l
 Cloudflare Workers Static Assets and the Worker API are configured by wrangler.jsonc. Production deploys from main through the existing Cloudflare Git integration. Never commit access tokens. This repository's sample sticker picker does not send or persist real chat messages. Integrate sticker IDs through SautiLink's authenticated messaging endpoints only after app-level testing. New user-generated pack uploads and remote favorites require a moderated authenticated service and are not included yet.
 
 Source code is all-rights-reserved. Third-party art remains subject to its original licenses.
+
+## Motion Emoji Engine v0.3
+
+- Eight original SautiLink vector emojis (Lottie JSON), with interactive effects and inline message tokens `:slv-heart:`.
+- First-party canvas Lottie player (vendored from MIT-licensed lottie-web 5.13.0); no runtime CDN for vector playback.
+- Safe TGS importer for staff-verified, rights-cleared local .tgs assets only; no Telegram sticker artwork bundled.
+- Explore the new `/emoji-lab.html` preview. The API includes `/api/v1/capabilities` and `/api/v1/emoji-map`.
+- Existing WebP/SVG sticker APIs remain compatible. Native Android must use a Lottie-compatible renderer; see docs/ANDROID_CLIENT.md.
+
+Vector player provenance: Airbnb Bodymovin/lottie-web 5.13.0, pinned GitHub commit bede03d25d232826e0c9dca1733d542d8a7754fb, MIT license in licenses/lottie-web-MIT.txt. Only approved local shape-only vector JSON is played. No Telegram artwork is distributed.

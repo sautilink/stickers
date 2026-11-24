@@ -53,7 +53,11 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
   const counts = Object.fromEntries(categories.map(c=>[c, stickers.filter(s=>s.category===c).length]));
   const asSticker = (s, url) => ({...s, asset_url: new URL(s.asset_path, url.origin).href});
   const asPack = (p, url) => ({
-    ...p, cover_url: asSticker(byId.get(p.cover_sticker_id), url).asset_url
+    ...p, cover_url: asSticker(byId.get(p.cover_sticker_id), url).asset_url,
+    cover_id: p.cover_sticker_id,
+    cover_format: byId.get(p.cover_sticker_id).format,
+    cover_emoji: byId.get(p.cover_sticker_id).emoji,
+    cover_title: byId.get(p.cover_sticker_id).title
   });
   const commonHeaders = (req, type) => {
     const headers = new Headers({...jsonHeaders, "content-type": type || jsonHeaders["content-type"]});
@@ -121,8 +125,14 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
     },200,"no-store");
     if (path === "/api/v1/stats") return response(req,{data:{
       packs:packs.length, stickers:stickers.length, animated:stickers.filter(s=>s.animated).length,
-      categories:counts, catalog_updated_at:catalog.updated_at
+      categories:counts, formats:stickers.reduce((acc,s)=>(acc[s.format]=(acc[s.format]||0)+1,acc),{}), catalog_updated_at:catalog.updated_at
     }});
+    if (path === "/api/v1/capabilities") return response(req,{data:{
+      formats:["webp","svg","lottie"],tgs_import:true,inline_emoji:true,interactive_effects:["pop"],
+      first_party_assets:true,client_pickup:{type:"sticker",fields:["sticker_id","pack_id"]},
+      requires_artwork_rights_review:true
+    }});
+    if (path === "/api/v1/emoji-map") return response(req,{data:stickers.filter(s=>s.inline_emoji).map(s=>({id:s.id,emoji:s.emoji,pack_id:s.pack_id,format:s.format,asset_url:asSticker(s,url).asset_url}))});
     if (path === "/api/v1/licenses") return response(req,{data:packs.map(p=>({
       pack_id:p.id,author:p.author,license:p.license,license_url:p.license_url,
       attribution:p.attribution,source_url:p.source_url

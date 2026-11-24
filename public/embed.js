@@ -1,4 +1,5 @@
 import {createStickerClient,createStickerMessage} from "./sdk.js";
+import {createStickerVisual} from "./vector-player.js";
 
 /**
  * Self-contained sticker picker for SautiLink Web.
@@ -92,10 +93,10 @@ class SautiLinkStickerPicker extends HTMLElement {
     const root=this.root.querySelector(".results");root.replaceChildren();
     for(const sticker of this.items){
       const button=document.createElement("button");button.type="button";button.className="sticker";button.setAttribute("aria-label",sticker.title);
-      const img=document.createElement("img");img.alt="";img.loading="lazy";
       const target=new URL(sticker.asset_url);
-      if(target.origin===new URL(this.getAttribute("api")||new URL(import.meta.url).origin).origin)img.src=target.href;
-      button.append(img);button.addEventListener("click",()=>{
+      const expected=new URL(this.getAttribute("api")||new URL(import.meta.url).origin).origin;
+      if(target.origin!==expected)continue;
+      button.append(createStickerVisual(sticker,{size:62}));button.addEventListener("click",()=>{
         const payload=createStickerMessage(sticker);
         this.dispatchEvent(new CustomEvent("sautilink:sticker-select",{detail:payload,bubbles:true,composed:true}));
         this.close();
