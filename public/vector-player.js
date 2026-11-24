@@ -20,6 +20,8 @@ const animationCache=new Map();
 async function fetchTrustedAnimation(sticker){
  if(!allowedId.test(sticker.id))throw Error("Invalid sticker ID");
  const url=new URL(sticker.asset_url);
+ const expectedOrigin=new URL(import.meta.url).origin;
+ if(url.origin!==expectedOrigin)throw Error("Only first-party vector assets may be loaded");
  if(url.protocol!=="https:" && !(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw Error("Bad vector protocol");
  if(!/^\/assets\/vector\/slv-[a-z0-9-]+\.json$/.test(url.pathname))throw Error("Vector asset must be first-party approved artwork");
  if(!animationCache.has(url.href)){
