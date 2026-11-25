@@ -1,0 +1,2 @@
+# Vector hashes are computed over the served bytes.
+public/assets/vector/*.json text eol=lf

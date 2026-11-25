@@ -13611,12 +13611,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-heart.json",
-      "file_sha256": null,
+      "file_sha256": "8cbb621cb6c85a9e766cda1907b485e61db95df7a77afd5482612e63b69e1c1c",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     },
     {
       "id": "slv-laugh",
@@ -13636,12 +13637,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-laugh.json",
-      "file_sha256": null,
+      "file_sha256": "743ef8bdce40306898afe19ae097e7f807ffde7ec8072f70cbf210d158332c8c",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     },
     {
       "id": "slv-wow",
@@ -13660,12 +13662,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-wow.json",
-      "file_sha256": null,
+      "file_sha256": "c4ddc8357e007cad947657fe8ab1006c9b587ecd325852f52436ac93d89d9d78",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     },
     {
       "id": "slv-wave",
@@ -13685,12 +13688,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-wave.json",
-      "file_sha256": null,
+      "file_sha256": "1ec801ccc9d8cd2c5af150c118cc59b525c7f1f51d57b148b139b0ba8df9ec55",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     },
     {
       "id": "slv-party",
@@ -13709,12 +13713,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-party.json",
-      "file_sha256": null,
+      "file_sha256": "db3ec8edb6b7878fc5a286e600218cfcdd42816d52c2d390b4dc2cc80a660678",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     },
     {
       "id": "slv-fire",
@@ -13733,12 +13738,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-fire.json",
-      "file_sha256": null,
+      "file_sha256": "5030b2f7b040a00c2be8b2d4d5e88a742b004aade6c603d9cbdbd38dfee3ca2c",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     },
     {
       "id": "slv-thanks",
@@ -13757,12 +13763,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-thanks.json",
-      "file_sha256": null,
+      "file_sha256": "9ce8aec773c03c9d5e091ac4f300b492667ec122cc96e364c309709d1a04388b",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     },
     {
       "id": "slv-cool",
@@ -13781,12 +13788,13 @@
       "width": 256,
       "height": 256,
       "asset_path": "/assets/vector/slv-cool.json",
-      "file_sha256": null,
+      "file_sha256": "d20e149bec4bfc62faba88220ab6a25226791174f518b51eed56eceb8bd9b08a",
       "license": "SautiLink original artwork; all rights reserved",
       "source_url": "https://sautilink.com/",
       "inline_emoji": true,
       "interaction_effect": "pop",
-      "animation_duration_ms": 2000
+      "animation_duration_ms": 2000,
+      "render_revision": 2
     }
   ]
 }
