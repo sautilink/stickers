@@ -11,18 +11,27 @@ export function createStickerClient(baseUrl=globalThis.location?.origin,fetcher=
   if(origin.protocol!=="https:" && !(origin.protocol==="http:" && ["localhost","127.0.0.1"].includes(origin.hostname))) {
     throw new TypeError("Sticker API must use HTTPS");
   }
+  const pending=new Map(), recent=new Map();
   const api = async (path,query={})=>{
     const url=new URL(path,origin);
     for(const [key,value] of Object.entries(query)) {
       if(value!==undefined && value!==null && value!=="") url.searchParams.set(key,Array.isArray(value)?value.join(","):String(value));
     }
-    const response=await fetcher(url.toString(),{method:"GET",headers:{accept:"application/json"}});
+    const key=url.toString(), cacheable=path!=="/api/v1/stickers/random";
+    const hit=recent.get(key);if(cacheable&&hit&&hit.until>Date.now())return structuredClone(hit.payload);
+    if(cacheable&&pending.has(key))return structuredClone(await pending.get(key));
+    const work=(async()=>{
+    const response=await fetcher(key,{method:"GET",credentials:"omit",headers:{accept:"application/json"}});
     const payload=await response.json();
     if(!response.ok) {
       const error=new Error(payload?.error?.message||"Sticker API error");
       error.status=response.status;error.code=payload?.error?.code;throw error;
     }
+    if(cacheable){if(recent.size>=64)recent.delete(recent.keys().next().value);recent.set(key,{payload,until:Date.now()+30000});}
     return payload;
+    })();
+    if(cacheable)pending.set(key,work);
+    try{return structuredClone(await work);}finally{if(cacheable)pending.delete(key);}
   };
   return Object.freeze({
     capabilities:()=>api("/api/v1/capabilities"),

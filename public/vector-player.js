@@ -23,8 +23,9 @@ async function fetchTrustedAnimation(sticker){
  const expectedOrigin=new URL(import.meta.url).origin;
  if(url.origin!==expectedOrigin)throw Error("Only first-party vector assets may be loaded");
  if(url.protocol!=="https:" && !(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw Error("Bad vector protocol");
- if(!/^\/assets\/vector\/slv-[a-z0-9-]+\.json$/.test(url.pathname))throw Error("Vector asset must be first-party approved artwork");
+ if(url.pathname!=="/assets/vector/"+sticker.id+".json"||url.search||url.hash)throw Error("Vector asset must be first-party approved artwork");
  if(!animationCache.has(url.href)){
+  if(animationCache.size>=64)animationCache.delete(animationCache.keys().next().value);
   animationCache.set(url.href,fetch(url.href,{credentials:"omit",mode:"cors",headers:{accept:"application/json"}}).then(async res=>{
    if(!res.ok)throw Error("Vector asset unavailable");
    const text=await res.text();if(text.length>512000)throw Error("Vector asset too large");
@@ -35,54 +36,74 @@ async function fetchTrustedAnimation(sticker){
  }
  return animationCache.get(url.href);
 }
-const observers=new WeakMap();
-/**
- * Animated images keep their native WebP/SVG render path. Lottie is only
- * loaded when the element scrolls into view and motion is permitted.
- */
+// One visibility observer and one cleanup loop, rather than one mutation observer per sticker.
+const active=new Map();
+let cleanupTimer=null;
+function dispose(node,entry){
+ try{entry.instance?.destroy();}catch{}
+ visibility?.unobserve(node);active.delete(node);
+}
+function cleanup(){
+ for(const [node,entry] of active){
+  if(!node.isConnected)dispose(node,entry);
+  else if(entry.visible&&!entry.instance&&!entry.loading&&!entry.failed&&!document.hidden&&!prefersReducedMotion())void entry.mount();
+  else if(entry.instance){
+   if(document.hidden||prefersReducedMotion()||!entry.visible)entry.instance.pause();
+   else entry.instance.play();
+  }
+ }
+ if(!active.size&&cleanupTimer!==null){clearInterval(cleanupTimer);cleanupTimer=null;}
+}
+const visibility=typeof IntersectionObserver==="function"?new IntersectionObserver(entries=>{
+ for(const hit of entries){
+  const entry=active.get(hit.target);if(!entry)continue;
+  entry.visible=hit.isIntersecting;
+  if(entry.visible&&!entry.instance&&!entry.loading&&!entry.failed)void entry.mount();
+  if(entry.instance){if(entry.visible&&!document.hidden&&!prefersReducedMotion())entry.instance.play();else entry.instance.pause();}
+ }
+},{rootMargin:"80px"}):null;
+if(typeof document!=="undefined")document.addEventListener("visibilitychange",cleanup);
 export function createStickerVisual(sticker,{size=106,lite=false,loop=true}={}){
  const wrapper=document.createElement("span");
  wrapper.className="sl-sticker-visual";
  wrapper.style.cssText="display:inline-grid;place-items:center;position:relative;max-width:100%;vertical-align:middle;width:"+size+"px;height:"+size+"px";
  wrapper.setAttribute("role","img");wrapper.setAttribute("aria-label",sticker.title||"Animated sticker");
- if(sticker.format!=="lottie" && !lite){
-  const img=document.createElement("img");img.src=sticker.asset_url;img.alt="";
-  img.loading="lazy";img.decoding="async";img.width=size;img.height=size;
-  img.style.cssText="width:100%;height:100%;object-fit:contain";
-  wrapper.append(img);return wrapper;
- }
  const fallback=document.createElement("span");fallback.textContent=sticker.emoji||"✨";
  fallback.style.cssText="font-size:"+Math.round(size*.65)+"px;line-height:1;display:grid;place-items:center";
  wrapper.append(fallback);
- if(lite||prefersReducedMotion()||sticker.format!=="lottie")return wrapper;
- const mount=async()=>{
-  if(!wrapper.isConnected)return;
+ let url;
+ try{url=new URL(sticker.asset_url);if(url.origin!==new URL(import.meta.url).origin||!/^\/assets\/[a-z0-9/_-]+\.(webp|svg|json)$/.test(url.pathname)||url.search||url.hash)return wrapper;}catch{return wrapper;}
+ if(lite||prefersReducedMotion())return wrapper;
+ if(sticker.format!=="lottie"){
+  const img=document.createElement("img");img.alt="";img.loading="lazy";img.decoding="async";img.width=size;img.height=size;
+  img.style.cssText="width:100%;height:100%;object-fit:contain";
+  img.addEventListener("load",()=>{if(img.naturalWidth>0)wrapper.replaceChildren(img);},{once:true});
+  img.addEventListener("error",()=>wrapper.replaceChildren(fallback),{once:true});
+  // Attach hidden image to retain native lazy loading and keep the fallback visible until decoded.
+  img.style.position="absolute";img.style.opacity="0";
+  img.addEventListener("load",()=>{img.style.opacity="1";img.style.position="static";},{once:true});
+  wrapper.append(img);img.src=url.href;
+  return wrapper;
+ }
+ const entry={visible:!visibility,loading:false,failed:false,instance:null,mount:async()=>{
+  if(!wrapper.isConnected||entry.loading||entry.instance||entry.failed||document.hidden||prefersReducedMotion())return;
+  entry.loading=true;
   try{
    const [player,animationData]=await Promise.all([loadPlayer(),fetchTrustedAnimation(sticker)]);
-   if(!wrapper.isConnected||prefersReducedMotion())return;
-   const stage=document.createElement("span");
-   stage.style.cssText="display:block;width:100%;height:100%;overflow:hidden";
+   if(!wrapper.isConnected||active.get(wrapper)!==entry||prefersReducedMotion())return;
+   const stage=document.createElement("span");stage.style.cssText="display:block;width:100%;height:100%;overflow:hidden";
    wrapper.replaceChildren(stage);
-   const instance=player.loadAnimation({
-    container:stage,renderer:"canvas",loop,autoplay:true,
-    animationData:JSON.parse(JSON.stringify(animationData)),
-    rendererSettings:{clearCanvas:true}
-   });
-   const watcher=new MutationObserver(()=>{
-    if(!wrapper.isConnected){instance.destroy();watcher.disconnect();}
-   });
-   watcher.observe(document.body,{subtree:true,childList:true});
-   observers.set(wrapper,instance);
-  }catch{
-   wrapper.replaceChildren(fallback);
-  }
- };
- if(typeof IntersectionObserver==="function"){
-  const io=new IntersectionObserver(entries=>{
-   if(entries.some(e=>e.isIntersecting)){io.disconnect();void mount();}
-  },{rootMargin:"140px"});
-  io.observe(wrapper);
- }else queueMicrotask(()=>void mount());
+   const instance=player.loadAnimation({container:stage,renderer:"canvas",loop,autoplay:entry.visible&&!document.hidden,
+    animationData:JSON.parse(JSON.stringify(animationData)),rendererSettings:{clearCanvas:true}});
+   entry.instance=instance;
+   const fail=()=>{entry.failed=true;dispose(wrapper,entry);wrapper.replaceChildren(fallback);};
+   instance.addEventListener?.("data_failed",fail);instance.addEventListener?.("error",fail);
+  }catch{entry.failed=true;dispose(wrapper,entry);wrapper.replaceChildren(fallback);}
+  finally{entry.loading=false;}
+ }};
+ active.set(wrapper,entry);
+ if(cleanupTimer===null)cleanupTimer=setInterval(cleanup,1000);
+ if(visibility)visibility.observe(wrapper);else queueMicrotask(()=>void entry.mount());
  return wrapper;
 }
 export function popSticker(element,{color="#ffc44f"}={}){
