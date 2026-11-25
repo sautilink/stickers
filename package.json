@@ -20,7 +20,13 @@
     "seo:audit": "node scripts/seo-audit.mjs",
     "validate:vectors": "node scripts/validate-vectors.mjs",
     "import:tgs": "node scripts/import-tgs.mjs",
-    "vendor:player": "node scripts/vendor-player.mjs"
+    "vendor:player": "node scripts/vendor-player.mjs",
+    "build:media": "node scripts/build-media-previews.mjs",
+    "test:browser": "node scripts/browser-check.mjs"
   },
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "sharp": "0.34.5",
+    "playwright": "1.56.1"
+  }
 }

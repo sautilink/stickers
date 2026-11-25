@@ -1,5 +1,5 @@
 import {createStickerClient,createStickerMessage} from "/sdk.js";
-import {createStickerVisual} from "/vector-player.js";
+import {createStickerVisual,loadStickerPreviews} from "/vector-player.js";
 
 const $=id=>document.getElementById(id);
 const client=createStickerClient(location.origin);
@@ -41,14 +41,14 @@ const urlFor=s=>{
  const url=new URL(s.asset_url,location.origin);
  return url.origin===location.origin?url.href:"";
 };
-function imageFor(sticker,{size=106}={}) {
+function imageFor(sticker,{size=106,preview=false}={}) {
  if(lite){
   const fallback=document.createElement("span");fallback.className="lite-art";
   fallback.textContent=sticker.emoji||"✦";fallback.style.fontSize=Math.round(size*.56)+"px";
   fallback.style.width=size+"px";fallback.style.height=size+"px";
   return fallback;
  }
- return createStickerVisual({...sticker,asset_url:urlFor(sticker)},{size,lite:false});
+ return createStickerVisual({...sticker,asset_url:urlFor(sticker)},{size,lite:false,preview});
 }
 function setNav(){
  document.querySelectorAll(".nav").forEach(el=>el.classList.toggle("active",
@@ -73,7 +73,7 @@ function renderPackTiles(){
  for(const pack of state.packs){
   const btn=document.createElement("button");btn.type="button";btn.className="pack-tile"+(state.pack===pack.id&&state.tab==="pack"?" active":"");
   btn.setAttribute("aria-label","Open pack "+pack.name);
-  const img=createStickerVisual({id:pack.cover_id,format:pack.cover_format,emoji:pack.cover_emoji,title:pack.cover_title,asset_url:pack.cover_url},{size:52,lite});
+  const img=createStickerVisual({id:pack.cover_id,format:pack.cover_format,emoji:pack.cover_emoji,title:pack.cover_title,asset_url:pack.cover_url},{size:52,lite,preview:true});
   const span=document.createElement("span");const name=document.createElement("b");name.textContent=pack.name;
   const count=document.createElement("small");count.textContent=pack.sticker_count+" "+t("count");
   span.append(name,count);btn.append(img,span);btn.onclick=()=>setTab("pack",pack.id);root.append(btn);
@@ -114,18 +114,24 @@ function toggleFavorite(s){
  updateSelected();
 }
 function renderCards(){
- const root=$("stickerGrid");root.replaceChildren();
+ const root=$("stickerGrid");
  const saved=new Set(favorites());
+ const existing=new Map([...root.children].map(node=>[node.dataset.stickerId,node]));
+ const wanted=new Set(state.items.map(s=>s.id));
+ for(const [id,node] of existing)if(!wanted.has(id)||node.dataset.lite!==String(lite)){node.remove();existing.delete(id);}
+ let position=0;
  for(const s of state.items){
-  const wrapper=document.createElement("div");wrapper.className="tile";
+  const previous=existing.get(s.id);
+  if(previous){const fav=previous.querySelector(".heart");fav.classList.toggle("saved",saved.has(s.id));fav.textContent=saved.has(s.id)?"♥":"♡";fav.setAttribute("aria-label",(saved.has(s.id)?"Remove ":"Add ")+s.title+" favorite");if(root.children[position]!==previous)root.insertBefore(previous,root.children[position]||null);position++;continue;}
+  const wrapper=document.createElement("div");wrapper.className="tile";wrapper.dataset.stickerId=s.id;wrapper.dataset.lite=String(lite);
   const card=document.createElement("button");card.type="button";card.className="sticker-card";card.setAttribute("aria-label",s.title+" — "+t("view"));
-  card.append(imageFor(s),Object.assign(document.createElement("div"),{className:"sticker-name",textContent:s.title}));
+  card.append(imageFor(s,{preview:true}),Object.assign(document.createElement("div"),{className:"sticker-name",textContent:s.title}));
   card.onclick=()=>showDetails(s);
   const fav=document.createElement("button");fav.type="button";fav.className="heart"+(saved.has(s.id)?" saved":"");
   fav.textContent=saved.has(s.id)?"♥":"♡";
   fav.setAttribute("aria-label",(saved.has(s.id)?"Remove ":"Add ")+s.title+" favorite");
   fav.onclick=()=>toggleFavorite(s);
-  wrapper.append(card,fav);root.append(wrapper);
+  wrapper.append(card,fav);root.insertBefore(wrapper,root.children[position]||null);position++;
  }
  $("total").textContent=state.total+" "+t("count");
  $("status").textContent=state.items.length?"":t("empty");
@@ -157,7 +163,7 @@ async function refresh(append=false){
     (!query||[s.title,s.emoji,...s.tags].join(" ").toLocaleLowerCase("en").includes(query.toLocaleLowerCase("en"))));
    total=items.length;
   }else {
-   const filters={q:query,pack:state.pack,category:state.category,sort:state.sort,limit:40};
+   const filters={q:query,pack:state.pack,category:state.category,sort:state.sort,limit:24};
    if(append&&state.next)filters.cursor=state.next;
    const result=await client.search(filters);
    items=append?[...state.items,...result.data]:result.data;
@@ -215,7 +221,7 @@ function bootControls(){
  theme.onclick=()=>{dark=!dark;save("dark",dark);applyTheme();};
  const liteBtn=document.createElement("button");liteBtn.id="liteToggle";liteBtn.className="tool";liteBtn.type="button";
  liteBtn.title="Data saver: show emoji placeholders instead of downloading animations";
- liteBtn.onclick=()=>{lite=!lite;save("lite",lite);applyLite();renderCards();updateSelected();};
+ liteBtn.onclick=()=>{lite=!lite;save("lite",lite);applyLite();renderCards();renderPackTiles();updateSelected();};
  toolbar.prepend(liteBtn,theme,lang);
  applyTheme();applyLite();
  function createSuggestions(){
@@ -264,7 +270,7 @@ async function boot(){
   }).catch(()=>{});
  });
  try{
-  const [packs,categories]=await Promise.all([client.packs(),client.categories()]);
+  const [packs,categories]=await Promise.all([client.packs(),client.categories(),loadStickerPreviews()]);
   state.packs=packs.data;state.categories=categories.data;
   $("apiState").lastChild.textContent=" "+t("online");
   renderSidebar();applyLanguage();

@@ -72,7 +72,7 @@ class SautiLinkStickerPicker extends HTMLElement {
   close(){this.expanded=false;this.panel.hidden=true;this.trigger.setAttribute("aria-expanded","false");this.trigger.focus();}
   toggle(){return this.expanded?this.close():this.open();}
   async search(append=false){
-    if(this.loading)return;
+    if(append&&this.loading)return;
     const token=++this.seq;this.loading=true;
     const status=this.root.querySelector(".status");status.textContent="Loading…";
     const filters={q:this.root.querySelector(".search").value.trim(),
@@ -86,8 +86,8 @@ class SautiLinkStickerPicker extends HTMLElement {
       this.next=answer.pagination.next_cursor;this.total=answer.pagination.total;
       this.render();
       status.textContent=this.items.length?"":"No matching stickers";
-    }catch{status.textContent="Unable to load stickers.";}
-    finally{this.loading=false;}
+    }catch{if(token===this.seq)status.textContent="Unable to load stickers.";}
+    finally{if(token===this.seq)this.loading=false;}
   }
   render(){
     const root=this.root.querySelector(".results");root.replaceChildren();
