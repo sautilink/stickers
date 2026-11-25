@@ -22,5 +22,8 @@
     "import:tgs": "node scripts/import-tgs.mjs",
     "vendor:player": "node scripts/vendor-player.mjs"
   },
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "sharp": "^0.35.5"
+  }
 }

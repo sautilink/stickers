@@ -33,6 +33,15 @@ export function validateCatalog(catalog) {
     }
     stickerIds.add(sticker.id);
     assets.add(sticker.asset_path);
+    if (sticker.preview_path && (sticker.format !== "webp" ||
+        !/^\/assets\/previews\/[a-z0-9-]+\.webp$/.test(sticker.preview_path) ||
+        !/^[a-f0-9]{64}$/.test(sticker.preview_sha256 || "") ||
+        !/^[a-f0-9]{64}$/.test(sticker.preview_source_sha256 || "") ||
+        (sticker.file_sha256 && sticker.file_sha256 !== sticker.preview_source_sha256) ||
+        !Number.isInteger(sticker.preview_width) || sticker.preview_width < 1 || sticker.preview_width > 256 ||
+        !Number.isInteger(sticker.preview_height) || sticker.preview_height < 1 || sticker.preview_height > 256 ||
+        !Number.isInteger(sticker.preview_bytes) || sticker.preview_bytes < 1 || sticker.preview_bytes > 3_000_000))
+      throw Error("Invalid sticker preview: " + sticker.id);
   }
   for (const pack of catalog.packs) {
     const cover = catalog.stickers.find(s => s.id === pack.cover_sticker_id);
@@ -46,14 +55,24 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
   const originAllowlist = new Set(allowedOrigins);
   const stickers = catalog.stickers.map(s => ({...s}));
   const byId = new Map(stickers.map(s => [s.id,s]));
+  const searchIndex = new Map(stickers.map(s => [s.id, clean([s.title,s.emoji,...s.tags,s.category].join(" "))]));
+  const sortRanks = Object.fromEntries([...SORTS].map(sort => {
+    const ordered = [...stickers].sort(sort === "name" ? (a,b)=>a.title.localeCompare(b.title)||a.id.localeCompare(b.id) :
+      sort === "newest" ? (a,b)=>(b.sort_order??0)-(a.sort_order??0)||b.id.localeCompare(a.id) :
+      (a,b)=>(a.sort_order??0)-(b.sort_order??0)||a.id.localeCompare(b.id));
+    return [sort, new Map(ordered.map((s,index)=>[s.id,index]))];
+  }));
+  const responseCache = new Map();
+  const cacheablePath = path => path.startsWith("/api/v1/") && !path.endsWith("/random") && !path.endsWith("/health");
   const packs = catalog.packs.map(p => ({
     ...p, sticker_count: stickers.filter(s => s.pack_id === p.id).length
   })).sort((a,b)=>(a.sort_order??0)-(b.sort_order??0));
   const categories = [...new Set(stickers.map(s=>s.category))].sort();
   const counts = Object.fromEntries(categories.map(c=>[c, stickers.filter(s=>s.category===c).length]));
-  const asSticker = (s, url) => ({...s, asset_url: new URL(s.asset_path, url.origin).href});
+  const asSticker = (s, url) => ({...s, asset_url: new URL(s.asset_path, url.origin).href,
+    ...(s.preview_path ? {preview_url:new URL(s.preview_path,url.origin).href} : {})});
   const asPack = (p, url) => ({
-    ...p, cover_url: asSticker(byId.get(p.cover_sticker_id), url).asset_url,
+    ...p, cover_url: asSticker(byId.get(p.cover_sticker_id), url).preview_url || asSticker(byId.get(p.cover_sticker_id), url).asset_url,
     cover_id: p.cover_sticker_id,
     cover_format: byId.get(p.cover_sticker_id).format,
     cover_emoji: byId.get(p.cover_sticker_id).emoji,
@@ -70,10 +89,25 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
     }
     return headers;
   };
-  const response = (req, payload, status=200, cache="public, max-age=60, stale-while-revalidate=60") => {
+  const cachedResponse = (req, entry) => {
     const headers = commonHeaders(req);
-    headers.set("cache-control", cache);
-    return new Response(req.method === "HEAD" ? null : JSON.stringify(payload), {status,headers});
+    headers.set("cache-control", entry.cache); headers.set("etag", entry.etag);
+    if ((req.headers.get("if-none-match") || "").split(",").map(value=>value.trim().replace(/^W\//,"")).some(value=>value===entry.etag||value==="*"))
+      return new Response(null,{status:304,headers});
+    return new Response(req.method === "HEAD" ? null : entry.body,{status:200,headers});
+  };
+  const response = async (req, payload, status=200, cache="public, max-age=60, stale-while-revalidate=60") => {
+    const body = JSON.stringify(payload);
+    if (status === 200 && cache !== "no-store" && cacheablePath(new URL(req.url).pathname)) {
+      const digest = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(body));
+      const etag = '"'+[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("")+'"';
+      const entry = {body,etag,cache};
+      responseCache.delete(req.url); responseCache.set(req.url,entry);
+      if (responseCache.size > 64) responseCache.delete(responseCache.keys().next().value);
+      return cachedResponse(req,entry);
+    }
+    const headers = commonHeaders(req); headers.set("cache-control",cache);
+    return new Response(req.method === "HEAD" ? null : body,{status,headers});
   };
   const fail = (req,status,code,message) => response(req,{error:{code,message}},status,"no-store");
   const getParam = (url, name, fallback="") => url.searchParams.get(name) ?? fallback;
@@ -86,16 +120,14 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
     const term = clean(q);
     return stickers.filter(s => (!ids || ids.has(s.id)) &&
       (!pack || s.pack_id === pack) && (!category || s.category === category) &&
-      (!term || clean([s.title,s.emoji,...s.tags,s.category].join(" ")).includes(term)));
+      (!term || searchIndex.get(s.id).includes(term)));
   };
   function paginate(url, found) {
     const rawLimit = getParam(url,"limit","40"), rawCursor = getParam(url,"cursor","0");
     const sort = getParam(url,"sort","default");
     if (!/^[0-9]{1,3}$/.test(rawLimit) || !/^[0-9]{1,8}$/.test(rawCursor) || !SORTS.has(sort)) throw Error("Invalid pagination");
     const limit = Math.min(60, Math.max(1, Number(rawLimit))), offset = Number(rawCursor);
-    if (sort === "name") found.sort((a,b)=>a.title.localeCompare(b.title) || a.id.localeCompare(b.id));
-    else if (sort === "newest") found.sort((a,b)=>(b.sort_order??0)-(a.sort_order??0) || b.id.localeCompare(a.id));
-    else found.sort((a,b)=>(a.sort_order??0)-(b.sort_order??0) || a.id.localeCompare(b.id));
+    found.sort((a,b)=>sortRanks[sort].get(a.id)-sortRanks[sort].get(b.id));
     return {items:found.slice(offset,offset+limit), pagination:{
       total:found.length, limit, next_cursor:offset+limit<found.length?String(offset+limit):null
     }};
@@ -111,6 +143,8 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
       return new Response(null,{status:204,headers:commonHeaders(req)});
     }
     if (req.method !== "GET" && req.method !== "HEAD") return fail(req,405,"METHOD_NOT_ALLOWED","Read-only API");
+    const cached = responseCache.get(req.url);
+    if (cached && cacheablePath(path)) return cachedResponse(req,cached);
     const original = /^\/assets\/original\/(sl-[a-z]+)\.svg$/.exec(path);
     if (original) {
       const svg = originalSvg(original[1]);
