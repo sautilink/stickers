@@ -46,11 +46,29 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
   const originAllowlist = new Set(allowedOrigins);
   const stickers = catalog.stickers.map(s => ({...s}));
   const byId = new Map(stickers.map(s => [s.id,s]));
+  const byPack = new Map(), byCategory = new Map(), searchText = new Map();
+  const suggestionTerms = new Map();
+  for (const s of stickers) {
+    for (const [index,key] of [[byPack,s.pack_id],[byCategory,s.category]]) {
+      if(!index.has(key))index.set(key,[]);index.get(key).push(s);
+    }
+    searchText.set(s.id,clean([s.title,s.emoji,...s.tags,s.category].join(" ")));
+    for(const label of [s.title,...s.tags])if(!suggestionTerms.has(label))suggestionTerms.set(label,clean(label));
+  }
+  const compare = {default:(a,b)=>(a.sort_order??0)-(b.sort_order??0)||a.id.localeCompare(b.id),name:(a,b)=>a.title.localeCompare(b.title)||a.id.localeCompare(b.id),newest:(a,b)=>(b.sort_order??0)-(a.sort_order??0)||b.id.localeCompare(a.id)};
+  const defaultOrder=stickers.slice().sort(compare.default);
+  const resultsCache=new Map();
+  const CACHE_LIMIT=128;
+  const cacheKey=url=>url.origin+url.pathname+url.search;
+  const packById=new Map();
   const packs = catalog.packs.map(p => ({
-    ...p, sticker_count: stickers.filter(s => s.pack_id === p.id).length
+    ...p, sticker_count: (byPack.get(p.id)||[]).length
   })).sort((a,b)=>(a.sort_order??0)-(b.sort_order??0));
   const categories = [...new Set(stickers.map(s=>s.category))].sort();
-  const counts = Object.fromEntries(categories.map(c=>[c, stickers.filter(s=>s.category===c).length]));
+  const counts = Object.fromEntries(categories.map(c=>[c,byCategory.get(c).length]));
+  for(const p of packs)packById.set(p.id,p);
+  const formats=stickers.reduce((acc,s)=>(acc[s.format]=(acc[s.format]||0)+1,acc),{});
+  const animatedCount=stickers.filter(s=>s.animated).length;
   const asSticker = (s, url) => ({...s, asset_url: new URL(s.asset_path, url.origin).href});
   const asPack = (p, url) => ({
     ...p, cover_url: asSticker(byId.get(p.cover_sticker_id), url).asset_url,
@@ -73,7 +91,20 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
   const response = (req, payload, status=200, cache="public, max-age=60, stale-while-revalidate=60") => {
     const headers = commonHeaders(req);
     headers.set("cache-control", cache);
-    return new Response(req.method === "HEAD" ? null : JSON.stringify(payload), {status,headers});
+    const body=JSON.stringify(payload);
+    if(status===200 && cache.startsWith("public")){
+      const key=cacheKey(new URL(req.url));
+      // Bounded per-isolate cache; response headers are built separately for each Origin.
+      let hash=2166136261;for(let i=0;i<body.length;i++)hash=Math.imul(hash^body.charCodeAt(i),16777619);
+      const etag='W/"'+(hash>>>0).toString(16)+'-'+body.length+'"';
+      if(body.length<=500000){
+        if(resultsCache.size>=CACHE_LIMIT)resultsCache.delete(resultsCache.keys().next().value);
+        resultsCache.set(key,{body,etag,cache,expires:Date.now()+60000});
+      }
+      headers.set("etag",etag);
+      if(req.headers.get("if-none-match")?.split(",").map(x=>x.trim()).some(x=>x===etag||x==="*"))return new Response(null,{status:304,headers});
+    }
+    return new Response(req.method === "HEAD" ? null : body, {status,headers});
   };
   const fail = (req,status,code,message) => response(req,{error:{code,message}},status,"no-store");
   const getParam = (url, name, fallback="") => url.searchParams.get(name) ?? fallback;
@@ -84,18 +115,15 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
     const q = getParam(url,"q");
     if (!validFilter(pack) || !validFilter(category) || q.length > 80) throw Error("Invalid filter");
     const term = clean(q);
-    return stickers.filter(s => (!ids || ids.has(s.id)) &&
-      (!pack || s.pack_id === pack) && (!category || s.category === category) &&
-      (!term || clean([s.title,s.emoji,...s.tags,s.category].join(" ")).includes(term)));
+    const pool=ids?[...ids].map(id=>byId.get(id)).filter(Boolean):pack?(byPack.get(pack)||[]):category?(byCategory.get(category)||[]):defaultOrder;
+    return pool.filter(s => (!pack || s.pack_id===pack) && (!category || s.category===category) && (!term || searchText.get(s.id).includes(term)));
   };
   function paginate(url, found) {
     const rawLimit = getParam(url,"limit","40"), rawCursor = getParam(url,"cursor","0");
     const sort = getParam(url,"sort","default");
     if (!/^[0-9]{1,3}$/.test(rawLimit) || !/^[0-9]{1,8}$/.test(rawCursor) || !SORTS.has(sort)) throw Error("Invalid pagination");
     const limit = Math.min(60, Math.max(1, Number(rawLimit))), offset = Number(rawCursor);
-    if (sort === "name") found.sort((a,b)=>a.title.localeCompare(b.title) || a.id.localeCompare(b.id));
-    else if (sort === "newest") found.sort((a,b)=>(b.sort_order??0)-(a.sort_order??0) || b.id.localeCompare(a.id));
-    else found.sort((a,b)=>(a.sort_order??0)-(b.sort_order??0) || a.id.localeCompare(b.id));
+    found.sort(compare[sort]);
     return {items:found.slice(offset,offset+limit), pagination:{
       total:found.length, limit, next_cursor:offset+limit<found.length?String(offset+limit):null
     }};
@@ -120,12 +148,18 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
       headers.set("content-security-policy","default-src 'none'; style-src 'unsafe-inline'");
       return new Response(req.method==="HEAD"?null:svg,{status:200,headers});
     }
+    const cached=resultsCache.get(cacheKey(url));
+    if(cached && cached.expires>Date.now()){
+      const headers=commonHeaders(req);headers.set("cache-control",cached.cache);headers.set("etag",cached.etag);
+      const matches=req.headers.get("if-none-match")?.split(",").map(x=>x.trim()).some(x=>x===cached.etag||x==="*");
+      return new Response(matches||req.method==="HEAD"?null:cached.body,{status:matches?304:200,headers});
+    }
     if (path === "/api/v1/health" || path === "/health") return response(req,{
       status:"ok",service:"sautilink-stickers",version:"0.2.0"
     },200,"no-store");
     if (path === "/api/v1/stats") return response(req,{data:{
-      packs:packs.length, stickers:stickers.length, animated:stickers.filter(s=>s.animated).length,
-      categories:counts, formats:stickers.reduce((acc,s)=>(acc[s.format]=(acc[s.format]||0)+1,acc),{}), catalog_updated_at:catalog.updated_at
+      packs:packs.length, stickers:stickers.length, animated:animatedCount,
+      categories:counts, formats, catalog_updated_at:catalog.updated_at
     }});
     if (path === "/api/v1/capabilities") return response(req,{data:{
       formats:["webp","svg","lottie"],tgs_import:true,inline_emoji:true,interactive_effects:["pop"],
@@ -141,16 +175,16 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
     if (path === "/api/v1/packs") return response(req,{data:packs.map(p=>asPack(p,url))});
     if (path.startsWith("/api/v1/packs/")) {
       const id = path.slice("/api/v1/packs/".length);
-      const pack = packs.find(p=>p.id===id);
+      const pack = packById.get(id);
       if (!pack) return fail(req,404,"NOT_FOUND","Pack missing");
       return response(req,{data:{
         ...asPack(pack,url),
-        stickers:stickers.filter(s=>s.pack_id===id).map(s=>asSticker(s,url))
+        stickers:(byPack.get(id)||[]).map(s=>asSticker(s,url))
       }});
     }
     if (path === "/api/v1/featured") {
       const featured = packs.filter(p=>p.featured).flatMap(p=>
-        stickers.filter(s=>s.pack_id===p.id).slice(0,8));
+        (byPack.get(p.id)||[]).slice(0,8));
       return response(req,{data:featured.map(s=>asSticker(s,url))});
     }
     if (path === "/api/v1/stickers/random") {
@@ -166,9 +200,9 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
       const term=clean(q);
       if (term.length<2) return response(req,{data:[]});
       const terms=new Set();
-      for (const s of stickers) {
-        for (const tag of [s.title,...s.tags]) if (clean(tag).startsWith(term)) terms.add(tag);
-        if (terms.size>=250) break;
+      for (const [tag,normalized] of suggestionTerms) {
+        if(normalized.startsWith(term))terms.add(tag);
+        if(terms.size>=250)break;
       }
       return response(req,{data:[...terms].sort((a,b)=>a.length-b.length||a.localeCompare(b)).slice(0,12)});
     }
@@ -185,8 +219,8 @@ export function createEngine(catalog, {allowedOrigins = []} = {}) {
         found=filterStickers(url,{ids:idSet});
         paged=paginate(url,found);
         if(idSet && !url.searchParams.has("sort")){
-          const order=[...idSet];
-          found.sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
+          const order=new Map([...idSet].map((id,i)=>[id,i]));
+          found.sort((a,b)=>order.get(a.id)-order.get(b.id));
           paged={items:found.slice(Number(getParam(url,"cursor","0")),Number(getParam(url,"cursor","0"))+paged.pagination.limit),pagination:{
             ...paged.pagination,total:found.length
           }};
