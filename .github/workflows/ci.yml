@@ -13,10 +13,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm install --no-package-lock --no-audit --no-fund
       - run: npm run validate
       - run: npm run validate:vectors
       - run: npm test
       - run: npm run smoke
       - run: npm run check:ui
       - run: npm run seo:audit
+      - run: npm run build:media
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
       - run: npx --yes wrangler@4.167.0 deploy --dry-run --outdir .wrangler-dry-run

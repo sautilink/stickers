@@ -1,5 +1,5 @@
 import {createStickerClient,createStickerMessage} from "/sdk.js";
-import {createStickerVisual} from "/vector-player.js";
+import {createStickerVisual,loadStickerPreviews} from "/vector-player.js";
 
 const $=id=>document.getElementById(id);
 const client=createStickerClient(location.origin);
@@ -41,14 +41,14 @@ const urlFor=s=>{
  const url=new URL(s.asset_url,location.origin);
  return url.origin===location.origin?url.href:"";
 };
-function imageFor(sticker,{size=106}={}) {
+function imageFor(sticker,{size=106,preview=false}={}) {
  if(lite){
   const fallback=document.createElement("span");fallback.className="lite-art";
   fallback.textContent=sticker.emoji||"✦";fallback.style.fontSize=Math.round(size*.56)+"px";
   fallback.style.width=size+"px";fallback.style.height=size+"px";
   return fallback;
  }
- return createStickerVisual({...sticker,asset_url:urlFor(sticker)},{size,lite:false});
+ return createStickerVisual({...sticker,asset_url:urlFor(sticker)},{size,lite:false,preview});
 }
 function setNav(){
  document.querySelectorAll(".nav").forEach(el=>el.classList.toggle("active",
@@ -73,7 +73,7 @@ function renderPackTiles(){
  for(const pack of state.packs){
   const btn=document.createElement("button");btn.type="button";btn.className="pack-tile"+(state.pack===pack.id&&state.tab==="pack"?" active":"");
   btn.setAttribute("aria-label","Open pack "+pack.name);
-  const img=createStickerVisual({id:pack.cover_id,format:pack.cover_format,emoji:pack.cover_emoji,title:pack.cover_title,asset_url:pack.cover_url},{size:52,lite});
+  const img=createStickerVisual({id:pack.cover_id,format:pack.cover_format,emoji:pack.cover_emoji,title:pack.cover_title,asset_url:pack.cover_url},{size:52,lite,preview:true});
   const span=document.createElement("span");const name=document.createElement("b");name.textContent=pack.name;
   const count=document.createElement("small");count.textContent=pack.sticker_count+" "+t("count");
   span.append(name,count);btn.append(img,span);btn.onclick=()=>setTab("pack",pack.id);root.append(btn);
@@ -125,7 +125,7 @@ function renderCards(){
   if(previous){const fav=previous.querySelector(".heart");fav.classList.toggle("saved",saved.has(s.id));fav.textContent=saved.has(s.id)?"♥":"♡";fav.setAttribute("aria-label",(saved.has(s.id)?"Remove ":"Add ")+s.title+" favorite");if(root.children[position]!==previous)root.insertBefore(previous,root.children[position]||null);position++;continue;}
   const wrapper=document.createElement("div");wrapper.className="tile";wrapper.dataset.stickerId=s.id;wrapper.dataset.lite=String(lite);
   const card=document.createElement("button");card.type="button";card.className="sticker-card";card.setAttribute("aria-label",s.title+" — "+t("view"));
-  card.append(imageFor(s),Object.assign(document.createElement("div"),{className:"sticker-name",textContent:s.title}));
+  card.append(imageFor(s,{preview:true}),Object.assign(document.createElement("div"),{className:"sticker-name",textContent:s.title}));
   card.onclick=()=>showDetails(s);
   const fav=document.createElement("button");fav.type="button";fav.className="heart"+(saved.has(s.id)?" saved":"");
   fav.textContent=saved.has(s.id)?"♥":"♡";
@@ -270,7 +270,7 @@ async function boot(){
   }).catch(()=>{});
  });
  try{
-  const [packs,categories]=await Promise.all([client.packs(),client.categories()]);
+  const [packs,categories]=await Promise.all([client.packs(),client.categories(),loadStickerPreviews()]);
   state.packs=packs.data;state.categories=categories.data;
   $("apiState").lastChild.textContent=" "+t("online");
   renderSidebar();applyLanguage();

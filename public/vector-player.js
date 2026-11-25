@@ -63,7 +63,19 @@ const visibility=typeof IntersectionObserver==="function"?new IntersectionObserv
  }
 },{rootMargin:"80px"}):null;
 if(typeof document!=="undefined")document.addEventListener("visibilitychange",cleanup);
-export function createStickerVisual(sticker,{size=106,lite=false,loop=true}={}){
+let previewMap=null,previewLoad=null;
+export function loadStickerPreviews(){
+ if(previewLoad)return previewLoad;
+ previewLoad=fetch(new URL("./assets/previews/manifest.json",import.meta.url),{credentials:"omit"})
+  .then(r=>r.ok?r.json():null).then(data=>{
+    previewMap=new Map();
+    for(const [id,info] of Object.entries(data?.previews||{})){
+      if(allowedId.test(id)&&info?.path==="/assets/previews/"+id+".webp")previewMap.set(id,info.path);
+    }
+  }).catch(()=>{previewMap=new Map();});
+ return previewLoad;
+}
+export function createStickerVisual(sticker,{size=106,lite=false,loop=true,preview=false}={}){
  const wrapper=document.createElement("span");
  wrapper.className="sl-sticker-visual";
  wrapper.style.cssText="display:inline-grid;place-items:center;position:relative;max-width:100%;vertical-align:middle;width:"+size+"px;height:"+size+"px";
@@ -78,11 +90,13 @@ export function createStickerVisual(sticker,{size=106,lite=false,loop=true}={}){
   const img=document.createElement("img");img.alt="";img.loading="lazy";img.decoding="async";img.width=size;img.height=size;
   img.style.cssText="width:100%;height:100%;object-fit:contain";
   img.addEventListener("load",()=>{if(img.naturalWidth>0)wrapper.replaceChildren(img);},{once:true});
-  img.addEventListener("error",()=>wrapper.replaceChildren(fallback),{once:true});
+  const optimized=preview&&sticker.format==="webp"&&previewMap?.get(sticker.id);
+  let triedOriginal=!optimized;
+  img.addEventListener("error",()=>{if(!triedOriginal){triedOriginal=true;img.src=url.href;}else wrapper.replaceChildren(fallback);});
   // Attach hidden image to retain native lazy loading and keep the fallback visible until decoded.
   img.style.position="absolute";img.style.opacity="0";
   img.addEventListener("load",()=>{img.style.opacity="1";img.style.position="static";},{once:true});
-  wrapper.append(img);img.src=url.href;
+  wrapper.append(img);img.src=optimized?new URL(optimized,url.origin).href:url.href;
   return wrapper;
  }
  const entry={visible:!visibility,loading:false,failed:false,instance:null,mount:async()=>{
