@@ -93,10 +93,10 @@ class SautiLinkStickerPicker extends HTMLElement {
     const root=this.root.querySelector(".results");root.replaceChildren();
     for(const sticker of this.items){
       const button=document.createElement("button");button.type="button";button.className="sticker";button.setAttribute("aria-label",sticker.title);
-      const target=new URL(sticker.asset_url);
+      const target=new URL(sticker.preview_url||sticker.asset_url);
       const expected=new URL(this.getAttribute("api")||new URL(import.meta.url).origin).origin;
       if(target.origin!==expected)continue;
-      button.append(createStickerVisual(sticker,{size:62}));button.addEventListener("click",()=>{
+      button.append(createStickerVisual({...sticker,asset_url:target.href},{size:62}));button.addEventListener("click",()=>{
         const payload=createStickerMessage(sticker);
         this.dispatchEvent(new CustomEvent("sautilink:sticker-select",{detail:payload,bubbles:true,composed:true}));
         this.close();

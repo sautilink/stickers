@@ -21,6 +21,10 @@
 /assets/*
   Cache-Control: public, max-age=86400
 
+/assets/previews/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
 /emoji-lab.html
   X-Robots-Tag: noindex, nofollow
 
@@ -33,4 +37,3 @@
 
 /assets/vector/*
   Access-Control-Allow-Origin: *
-  Cache-Control: public, max-age=86400

@@ -36,7 +36,7 @@ function updateSelected(){
 function selectSticker(s){
  state.selected=s;
  $("sentSticker").replaceChildren();
- const img=document.createElement("img");img.src=s.asset_url;img.alt=s.title+" sticker";img.loading="lazy";$("sentSticker").append(img);
+ const img=document.createElement("img");img.src=s.preview_url||s.asset_url;img.alt=s.title+" sticker";img.loading="lazy";$("sentSticker").append(img);
  storage.set("sautilink-sticker-recent",[s.id,...recent().filter(x=>x!==s.id)]);
  updateSelected();
  window.dispatchEvent(new CustomEvent("sautilink:sticker-selected",{detail:escapeData({id:s.id,pack_id:s.pack_id,format:s.format,asset_url:s.asset_url})}));
@@ -46,7 +46,7 @@ function renderCards(){
  const fav=new Set(favorites());
  for(const s of state.items){
   const card=document.createElement("button");card.type="button";card.className="sticker-card";card.setAttribute("aria-label","Select "+s.title);
-  const pic=document.createElement("img");pic.src=s.asset_url;pic.alt="";pic.loading="lazy";
+  const pic=document.createElement("img");pic.src=s.preview_url||s.asset_url;pic.alt="";pic.loading="lazy";
   const title=document.createElement("div");title.className="sticker-name";title.textContent=s.title;
   const heart=document.createElement("button");heart.type="button";heart.className="heart"+(fav.has(s.id)?" saved":"");
   heart.textContent=fav.has(s.id)?"♥":"♡";heart.setAttribute("aria-label",(fav.has(s.id)?"Remove ":"Add ")+s.title+" favorite");

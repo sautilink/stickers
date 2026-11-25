@@ -48,7 +48,7 @@ function imageFor(sticker,{size=106}={}) {
   fallback.style.width=size+"px";fallback.style.height=size+"px";
   return fallback;
  }
- return createStickerVisual({...sticker,asset_url:urlFor(sticker)},{size,lite:false});
+ return createStickerVisual({...sticker,asset_url:urlFor({...sticker,asset_url:sticker.preview_url||sticker.asset_url})},{size,lite:false});
 }
 function setNav(){
  document.querySelectorAll(".nav").forEach(el=>el.classList.toggle("active",
